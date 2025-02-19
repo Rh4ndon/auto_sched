@@ -30,6 +30,7 @@ function deleteRecord($table, $condition)
     return mysqli_query($conn, $query);
 }
 
+
 function getAllRecords($table, $condition = '')
 {
     global $conn;
@@ -54,23 +55,12 @@ function getRecordMultiTable($table1, $table2, $onCondition, $whereCondition)
     return mysqli_fetch_assoc($result);
 }
 
-function getLastAttendanceRecord($student_id)
+function getRecordsJoin($table1, $table2, $table3, $onCondition, $onCondition2, $whereCondition)
 {
     global $conn;
-    // Ensure we fetch the latest record by ordering by date and time
-    $query = "SELECT * FROM attendance WHERE student_id = $student_id ORDER BY date DESC, time DESC LIMIT 1";
+    $query = "SELECT * FROM $table1 JOIN $table2 ON $onCondition JOIN $table3 ON $onCondition2 WHERE $whereCondition";
     $result = mysqli_query($conn, $query);
-    return mysqli_fetch_assoc($result);
-}
-
-
-function isTimeIn($student_id, $date)
-{
-    global $conn;
-    $query = "SELECT * FROM attendance WHERE student_id = $student_id AND date = '$date' ORDER BY time DESC LIMIT 1";
-    $result = mysqli_query($conn, $query);
-    $last_record = mysqli_fetch_assoc($result);
-    return $last_record && $last_record['remark'] === 'time-in';
+    return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
 function countAllRecords($table, $whereCondition = '1')
@@ -80,18 +70,4 @@ function countAllRecords($table, $whereCondition = '1')
     $result = mysqli_query($conn, $query);
     $row = mysqli_fetch_assoc($result);
     return $row['total'];
-}
-
-function getAttendanceData()
-{
-    global $conn;
-    $query = "SELECT date, COUNT(*) as total FROM attendance GROUP BY date ORDER BY date ASC";
-    $result = mysqli_query($conn, $query);
-    $dates = [];
-    $values = [];
-    while ($row = mysqli_fetch_assoc($result)) {
-        $dates[] = $row['date'];
-        $values[] = $row['total'];
-    }
-    return ['dates' => $dates, 'values' => $values];
 }

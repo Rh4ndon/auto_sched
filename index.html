@@ -3,7 +3,7 @@
 
 <head>
 
-	<title>Flat Able - Premium Admin Template by Phoenixcoded</title>
+	<title>Auto Scheduler</title>
 	<!-- HTML5 Shim and Respond.js IE11 support of HTML5 elements and media queries -->
 	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
 	<!--[if lt IE 11]>
@@ -18,12 +18,13 @@
 	<meta name="keywords" content="">
 	<meta name="author" content="Phoenixcoded" />
 	<!-- Favicon icon -->
-	<link rel="icon" href="assets/images/favicon.ico" type="image/x-icon">
+	<link rel="icon" href="assets/images/school-logo.png" type="image/x-icon">
 
 	<!-- vendor css -->
 	<link rel="stylesheet" href="assets/css/style.css">
-	
-	
+
+
+
 
 
 </head>
@@ -31,12 +32,13 @@
 <!-- [ auth-signin ] start -->
 <div class="auth-wrapper">
 	<div class="auth-content text-center">
-		<img src="assets/images/logo.png" alt="" class="img-fluid mb-4">
+
 		<div class="card borderless">
 			<div class="row align-items-center ">
 				<div class="col-md-12">
 					<div class="card-body">
-						<h4 class="mb-3 f-w-400">Signin</h4>
+
+						<h4 class="mb-3 f-w-400"><img src="assets/images/small-school-logo.png" alt="" class="img-fluid"> &nbsp;Signin </h4>
 						<hr>
 						<div class="form-group mb-3">
 							<input type="text" class="form-control" id="Email" placeholder="Email address">
@@ -46,10 +48,10 @@
 						</div>
 						<button class="btn btn-block btn-primary mb-4" id="loginBtn">Signin</button>
 
-		
+
 						<hr>
 						<!--p class="mb-2 text-muted">Forgot password? <a href="auth-reset-password.html" class="f-w-400">Reset</a></!--p-->
-						<p class="mb-0 text-muted">Don’t have an account? <a href="auth-signup.html" class="f-w-400">Signup</a></p>
+						<!--p class="mb-0 text-muted">Don’t have an account? <a href="auth-signup.html" class="f-w-400">Signup</a></!--p>
 					</div>
 				</div>
 			</div>
@@ -58,38 +60,117 @@
 </div>
 <!-- [ auth-signin ] end -->
 
-<script>
-	document.getElementById('loginBtn').addEventListener('click', function(event) {
-		event.preventDefault(); // Prevent default form submission
-		const email = document.getElementById('Email').value;
-		const password = document.getElementById('Password').value;
+						<script>
+							document.addEventListener('DOMContentLoaded', function () {
+								// Check session on page load
+								const xhr2 = new XMLHttpRequest();
+								xhr2.open('GET', 'controllers/index-session.php', true);
+								xhr2.onreadystatechange = function () {
+									if (xhr2.readyState === XMLHttpRequest.DONE) {
+										try {
+											if (xhr2.status === 200) {
+												let data2 = JSON.parse(xhr2.responseText);
+												
+												if (data2.user_type === 'admin') {
+													window.location.href = 'views/admin/admin-home.php';
+												} else if (data2.user_type === 'student') {
+													window.location.href = 'views/student/student-home.php';
+												} else if (data2.user_type === 'teacher') {
+													window.location.href = 'views/teacher/teacher-home.php';
+												}
+											} else {
+												console.error('Session check failed:', xhr2.responseText);
+											}
+										} catch (error) {
+											console.error('Error parsing session response:', error);
+										}
+									}
+								};
+								xhr2.send();
 
-		const xhr = new XMLHttpRequest();
-		xhr.open('POST', 'controllers/login.php', true);
-		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-		xhr.onreadystatechange = function() {
-			if (xhr.readyState === XMLHttpRequest.DONE) {
-				if (xhr.status === 200) {
-					// Handle success response
-					console.log('Login successful:', xhr.responseText);
-				} else {
-					// Handle error response
-					console.error('Login failed:', xhr.responseText);
-				}
-			}
-		};
-		xhr.send('email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password));
-	});
-</script>
+								function showAlert(message, type = 'danger') {
+									// Remove existing alert if any
+									let existingAlert = document.querySelector('.floating-alert');
+									if (existingAlert) {
+										existingAlert.remove();
+									}
+								
+									// Create the alert element
+									let alertDiv = document.createElement('div');
+									alertDiv.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
+									alertDiv.setAttribute('role', 'alert');
+									alertDiv.innerHTML = `
+										<strong>Error!</strong> ${message}
+										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+											<span aria-hidden="true">&times;</span>
+										</button>
+									`;
+								
+									// Append to body
+									document.body.appendChild(alertDiv);
+								
+									// Auto remove after 5 seconds
+									setTimeout(() => {
+										alertDiv.classList.remove('show');
+										setTimeout(() => alertDiv.remove(), 300);
+									}, 5000);
+								}
+							
+								// Handle login
+								document.getElementById('loginBtn').addEventListener('click', function (event) {
+									event.preventDefault(); // Prevent default form submission
+							
+									const email = document.getElementById('Email').value;
+									const password = document.getElementById('Password').value;
+							
+									const xhr = new XMLHttpRequest();
+									xhr.open('POST', 'controllers/login.php', true);
+									xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+									xhr.onreadystatechange = function () {
+										if (xhr.readyState === XMLHttpRequest.DONE) {
+											try {
+												if (xhr.status === 200) {
+													let data = JSON.parse(xhr.responseText);
+													console.log(data);
+													if (data.status === 'success') {
+														// Redirect to appropriate home page
+														if (data.user_type === 'admin') {
+															window.location.href = 'views/admin/admin-home.php';
+														} else if (data.user_type === 'student') {
+															window.location.href = 'views/student/student-home.php';
+														} else if (data.user_type === 'teacher') {
+															window.location.href = 'views/teacher/teacher-home.php';
+														} else {
+															console.warn('Unknown user type:', data.user_type);
+														}
+													}else {
+														console.error('Login failed:', data.message);
+														showAlert(data.message, 'danger');
+													}
+							
+													
+												} else {
+													console.error('Login failed:', xhr.responseText);
+												}
+											} catch (error) {
+												console.error('Error parsing login response:', error);
+											}
+										}
+									};
+									xhr.send('email=' + encodeURIComponent(email) + '&password=' + encodeURIComponent(password));
+								});
+							});
+							
+						</script>
 
-<!-- Required Js -->
-<script src="assets/js/vendor-all.min.js"></script>
-<script src="assets/js/plugins/bootstrap.min.js"></script>
+						<!-- Required Js -->
+						<script src="assets/js/vendor-all.min.js"></script>
+						<script src="assets/js/plugins/bootstrap.min.js"></script>
 
-<script src="assets/js/pcoded.min.js"></script>
+						<script src="assets/js/pcoded.min.js"></script>
 
 
 
-</body>
+						</body>
 
 </html>

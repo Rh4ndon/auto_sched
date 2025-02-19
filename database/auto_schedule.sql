@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost
--- Generation Time: Nov 12, 2024 at 10:14 AM
+-- Generation Time: Feb 17, 2025 at 07:49 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -24,23 +24,49 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
--- Table structure for table `admin`
+-- Table structure for table `classrooms`
 --
 
-CREATE TABLE `admin` (
-  `admin_id` int(11) NOT NULL,
-  `username` varchar(100) NOT NULL,
-  `password` varchar(100) NOT NULL,
-  `firstname` varchar(100) NOT NULL,
-  `lastname` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+CREATE TABLE `classrooms` (
+  `id` int(11) NOT NULL,
+  `room_number` varchar(50) NOT NULL,
+  `capacity` int(11) NOT NULL,
+  `type` enum('Room','Laboratory') NOT NULL DEFAULT 'Room'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `admin`
+-- Table structure for table `enrollments`
 --
 
-INSERT INTO `admin` (`admin_id`, `username`, `password`, `firstname`, `lastname`) VALUES
-(1, 'admin', '036d0ef7567a20b5a4ad24a354ea4a945ddab676', 'Admin', 'Admin');
+CREATE TABLE `enrollments` (
+  `id` int(11) NOT NULL,
+  `student_id` int(11) NOT NULL,
+  `subject_id` int(11) NOT NULL,
+  `section_id` int(11) NOT NULL,
+  `semester` enum('1','2','midyear') NOT NULL,
+  `academic_year` varchar(9) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `schedules`
+--
+
+CREATE TABLE `schedules` (
+  `id` int(11) NOT NULL,
+  `subject_id` int(11) NOT NULL,
+  `teacher_id` int(11) NOT NULL,
+  `classroom_id` int(11) NOT NULL,
+  `day` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday') NOT NULL,
+  `start_time` time NOT NULL,
+  `end_time` time NOT NULL,
+  `semester` enum('1','2','midyear') NOT NULL,
+  `academic_year` varchar(9) NOT NULL,
+  `exam_type` enum('none','prelim','midterm','final') DEFAULT 'none'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -49,91 +75,158 @@ INSERT INTO `admin` (`admin_id`, `username`, `password`, `firstname`, `lastname`
 --
 
 CREATE TABLE `sections` (
-  `section_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `grade` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
-
---
--- Dumping data for table `sections`
---
-
-INSERT INTO `sections` (`section_id`, `name`, `grade`) VALUES
-(5, 'Narra', 'G11'),
-(6, 'Athena', 'G12'),
-(7, 'Zues', 'G11'),
-(20, 'Salazar', 'G7');
+  `id` int(11) NOT NULL,
+  `section_name` varchar(50) NOT NULL,
+  `year_level` int(11) NOT NULL,
+  `semester` enum('1','2','midyear') NOT NULL,
+  `academic_year` varchar(9) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
 --
--- Table structure for table `students`
+-- Table structure for table `subjects`
 --
 
-CREATE TABLE `students` (
-  `student_id` int(100) NOT NULL,
-  `first_name` varchar(100) NOT NULL,
-  `last_name` varchar(100) NOT NULL,
-  `section_id` int(11) NOT NULL,
-  `gender` varchar(100) NOT NULL,
-  `profile` varchar(100) NOT NULL,
-  `status` varchar(100) NOT NULL,
-  `parent` varchar(100) NOT NULL,
-  `parent_no` varchar(13) NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci;
+CREATE TABLE `subjects` (
+  `id` int(11) NOT NULL,
+  `subject_code` varchar(50) NOT NULL,
+  `subject_name` varchar(100) NOT NULL,
+  `semester` enum('1','2','midyear') NOT NULL,
+  `year_level` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
 
 --
--- Dumping data for table `students`
+-- Table structure for table `users`
 --
 
-INSERT INTO `students` (`student_id`, `first_name`, `last_name`, `section_id`, `gender`, `profile`, `status`, `parent`, `parent_no`) VALUES
-(2024170521, 'Juan', 'Dela Cruz', 6, 'Male', '52be91679dfa94275de5ed8f69840259.png', 'Active', 'Eric Dela Cruz', '09123456789'),
-(2024170524, 'Juanna', 'Salazar', 6, 'Female', '68e687c4923600fc6fdd658295e5f243.jpg', 'Active', 'Don Suljueta', '09123456789'),
-(2024170527, 'Dallia', 'Cruz', 6, 'Female', 'c588afd06a88e3e509e92d68834f73ed.jpg', 'Active', 'Amie Cruz', '09123456789');
+CREATE TABLE `users` (
+  `id` int(11) NOT NULL,
+  `user_type` enum('admin','student','teacher') NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `email` varchar(100) NOT NULL,
+  `password` varchar(255) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `users`
+--
+
+INSERT INTO `users` (`id`, `user_type`, `name`, `email`, `password`) VALUES
+(1, 'admin', 'Admin', 'admin@gmail.com', '036d0ef7567a20b5a4ad24a354ea4a945ddab676'),
+(2, 'student', 'Sample Student', 'sample@gmail.com', '10470c3b4b1fed12c3baac014be15fac67c6e815'),
+(3, 'teacher', 'Teacher', 'teacher@gmail.com', '10470c3b4b1fed12c3baac014be15fac67c6e815');
 
 --
 -- Indexes for dumped tables
 --
 
 --
--- Indexes for table `admin`
+-- Indexes for table `classrooms`
 --
-ALTER TABLE `admin`
-  ADD PRIMARY KEY (`admin_id`);
+ALTER TABLE `classrooms`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `room_number` (`room_number`);
+
+--
+-- Indexes for table `enrollments`
+--
+ALTER TABLE `enrollments`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `student_id` (`student_id`),
+  ADD KEY `subject_id` (`subject_id`),
+  ADD KEY `section_id` (`section_id`);
+
+--
+-- Indexes for table `schedules`
+--
+ALTER TABLE `schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `subject_id` (`subject_id`),
+  ADD KEY `teacher_id` (`teacher_id`),
+  ADD KEY `classroom_id` (`classroom_id`);
 
 --
 -- Indexes for table `sections`
 --
 ALTER TABLE `sections`
-  ADD PRIMARY KEY (`section_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `students`
+-- Indexes for table `subjects`
 --
-ALTER TABLE `students`
-  ADD PRIMARY KEY (`student_id`);
+ALTER TABLE `subjects`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `subject_code` (`subject_code`);
+
+--
+-- Indexes for table `users`
+--
+ALTER TABLE `users`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `email` (`email`);
 
 --
 -- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT for table `admin`
+-- AUTO_INCREMENT for table `classrooms`
 --
-ALTER TABLE `admin`
-  MODIFY `admin_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+ALTER TABLE `classrooms`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `enrollments`
+--
+ALTER TABLE `enrollments`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `schedules`
+--
+ALTER TABLE `schedules`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sections`
 --
 ALTER TABLE `sections`
-  MODIFY `section_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `students`
+-- AUTO_INCREMENT for table `subjects`
 --
-ALTER TABLE `students`
-  MODIFY `student_id` int(100) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2024170531;
+ALTER TABLE `subjects`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `users`
+--
+ALTER TABLE `users`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `enrollments`
+--
+ALTER TABLE `enrollments`
+  ADD CONSTRAINT `enrollments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `enrollments_ibfk_2` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`),
+  ADD CONSTRAINT `enrollments_ibfk_3` FOREIGN KEY (`section_id`) REFERENCES `sections` (`id`);
+
+--
+-- Constraints for table `schedules`
+--
+ALTER TABLE `schedules`
+  ADD CONSTRAINT `schedules_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`),
+  ADD CONSTRAINT `schedules_ibfk_2` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`),
+  ADD CONSTRAINT `schedules_ibfk_3` FOREIGN KEY (`classroom_id`) REFERENCES `classrooms` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

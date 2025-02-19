@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=0, minimal-ui">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="description" content="" />
+    <meta name="keywords" content="">
+    <meta name="author" content="Phoenixcoded" />
+    <title>403 Forbidden</title>
+    <link rel="icon" href="../../assets/images/school-logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="../../assets/css/style.css">
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check session on page load
+            const xhr2 = new XMLHttpRequest();
+            xhr2.open('GET', '../../controllers/index-session.php', true);
+            xhr2.onreadystatechange = function () {
+                if (xhr2.readyState === XMLHttpRequest.DONE) {
+                    try {
+                        if (xhr2.status === 200) {
+                            let data2 = JSON.parse(xhr2.responseText);
+                            
+                            if (data2.user_type === 'admin') {
+                                window.location.href = '../admin/admin-home.php';
+                            } else if (data2.user_type === 'student') {
+                                window.location.href = '../student/student-home.php';
+                            } else if (data2.user_type === 'teacher') {
+                                window.location.href = 'teacher-home.php';
+                            }
+                        } else {
+                            console.error('Session check failed:', xhr2.responseText);
+                        }
+                    } catch (error) {
+                        console.error('Error parsing session response:', error);
+                    }
+                }
+            };
+            xhr2.send();
+        });
+    </script>
+</head>
+<body class="bg-light">
+    <div class="auth-wrapper d-flex justify-content-center align-items-center vh-100">
+        <div class="auth-content text-center">
+            <img src="../../assets/images/small-school-logo.png" alt="" class="img-fluid mb-4">
+            <div class="card borderless">
+                <div class="row align-items-center">
+                    <div class="col-md-12">
+                        <div class="card-body">
+                            <h1 class="display-1 fw-bold text-danger">403</h1>
+                            <p class="fs-3"> <span class="text-danger">Oops!</span> Access Denied.</p>
+                            <p class="lead">You do not have permission to access this page.</p>
+                            <a href="../../index.html" class="btn btn-primary">Go Home</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../../assets/js/vendor-all.min.js"></script>
+    <script src="../../assets/js/plugins/bootstrap.min.js"></script>
+    <script src="../../assets/js/pcoded.min.js"></script>
+</body>
+</html>
