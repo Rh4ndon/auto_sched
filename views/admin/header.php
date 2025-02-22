@@ -207,7 +207,7 @@
                                     <div class="media">
                                         <img class="img-radius" src="../../assets/images/user/avatar-1.jpg" alt="Generic placeholder image">
                                         <div class="media-body">
-                                            <p><strong><?= $_SESSION['name']; ?></strong><span class="n-time text-muted"><i class="icon feather icon-clock m-r-10"></i>5 min</span></p>
+                                            <p><strong></strong><span class="n-time text-muted"><i class="icon feather icon-clock m-r-10"></i>5 min</span></p>
                                             <p>New ticket Added</p>
                                         </div>
                                     </div>

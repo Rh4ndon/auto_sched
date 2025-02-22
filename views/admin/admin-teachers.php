@@ -117,7 +117,7 @@
                 <input type="hidden" id="enrollTeacherId">
                 <div class="modal-body">
                     <div class="form-group">
-                        <label for="enrollSubjects">Subjects (Press CTRL to select multiple subjects)</label>
+                        <label for="enrollSubjects">Subjects (Press CTRL then click to select multiple subjects)</label>
                         <select id="enrollSubjects" class="form-control" multiple required>
                             <!-- Options will be populated by JavaScript -->
                         </select>

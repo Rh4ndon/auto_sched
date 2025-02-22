@@ -141,7 +141,7 @@
                     </div>
                     <div class="form-group">
                         <label for="enrollAcademicYear">AcademicYear</label>
-                        <input type="text" name="academic_year" class="form-control" id="academic_year" placeholder="Enter Academic Year (e.g. 2024-2025)" required>
+                        <input type="text" name="academic_year" class="form-control" id="academicYear" placeholder="Enter Academic Year (e.g. 2024-2025)" required>
                     </div>
                     <div class="form-group">
                         <label for="enrollSubjects">Subjects (Press CTRL then click to select multiple subjects)</label>
@@ -306,7 +306,7 @@
         const section = document.getElementById('enrollSection').value;
         const semester = document.getElementById('enrollSemester').value;
         const year = document.getElementById('enrollYear').value;
-        const academic_year = document.getElementById('academic_year').value;
+        const academic_year = document.getElementById('academicYear').value;
         const subjects = Array.from(document.getElementById('enrollSubjects').selectedOptions).map(option => option.value);
 
         fetch(`../../controllers/enroll-student.php`, {

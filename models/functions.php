@@ -63,11 +63,14 @@ function getRecordsJoin($table1, $table2, $table3, $onCondition, $onCondition2, 
     return mysqli_fetch_all($result, MYSQLI_ASSOC);
 }
 
-function countAllRecords($table, $whereCondition = '1')
+function countAllRecords($table, $whereCondition = '')
 {
     global $conn;
-    $query = "SELECT COUNT(*) as total FROM $table WHERE $whereCondition";
+    $query = "SELECT COUNT(*) as total FROM $table $whereCondition";
     $result = mysqli_query($conn, $query);
     $row = mysqli_fetch_assoc($result);
     return $row['total'];
 }
+
+
+// Scheduler functions

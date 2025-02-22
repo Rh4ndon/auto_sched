@@ -56,6 +56,14 @@
                                                 <input type="number" min="1" max="4" name="year_level" class="form-control" id="year_level" placeholder="Enter year level">
                                             </div>
 
+                                            <div class="form-group">
+                                                <label for="subject_type">Subject Type</label>
+                                                <select name="subject_type" id="subject_type" class="form-control" placeholder="Enter subject type">
+                                                    <option value="lecture">Lecture</option>
+                                                    <option value="lab">Lab</option>
+                                                </select>
+                                            </div>
+
                                             <button type="submit" name="submit" class="btn btn-primary">Submit</button>
                                         </form>
 
@@ -80,6 +88,7 @@
                                                         <th>Subject Name</th>
                                                         <th>Semester</th>
                                                         <th>Year Level</th>
+                                                        <th>Subject Type</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -122,6 +131,8 @@
                                                                     <td>${subject.subject_name}</td>
                                                                     <td>${subject.semester}</td>
                                                                     <td>${subject.year_level}</td>
+                                                                    <td>${subject.subject_type}</td>
+
                                                                     <td>
                                                                         <button class="btn btn-sm btn-warning" onclick="editSubject(${subject.id})">Edit</button>
                                                                         <button class="btn btn-sm btn-danger" onclick="deleteSubject(${subject.id})">Delete</button>
@@ -159,6 +170,7 @@
                 document.getElementById('subject_name').value = subject.subject_name;
                 document.getElementById('semester').value = subject.semester;
                 document.getElementById('year_level').value = subject.year_level;
+                document.getElementById('subject_type').value = subject.subject_type;
                 document.querySelector('form').action = `../../controllers/edit-subject.php?id=${id}`;
             })
             .catch(error => console.error('Error fetching subject:', error));

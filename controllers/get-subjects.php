@@ -11,12 +11,18 @@ if (!empty($subjects)) {
         } else {
             $semester = '2nd Semester';
         }
+        if ($row['subject_type'] == 'lecture') {
+            $subject_type = 'Lecture';
+        } else {
+            $subject_type = 'Lab';
+        }
         $response[] = array(
             'count' => $count++,
             'subject_code' => $row['subject_code'],
             'subject_name' => $row['subject_name'],
             'semester' => $semester,
             'year_level' => $row['year_level'],
+            'subject_type' => $subject_type,
             'id' => $row['id']
         );
     }

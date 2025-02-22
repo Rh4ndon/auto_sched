@@ -22,12 +22,15 @@ if (isset($_POST['submit'])) {
     $subject_id = $_GET['id'];
     $semester = $_POST['semester'];
     $year_level = $_POST['year_level'];
+    $subject_type = $_POST['subject_type'];
+
 
     $data = [
         'subject_name' => $subject_name,
         'subject_code' => $subject_code,
         'semester' => $semester,
-        'year_level' => $year_level
+        'year_level' => $year_level,
+        'subject_type' => $subject_type,
     ];
 
     if (editRecord('subjects', $data, "id = $subject_id")) {

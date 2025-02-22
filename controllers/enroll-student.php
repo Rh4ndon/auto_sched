@@ -18,6 +18,7 @@ try {
     $semester = $data['semester'];
     $year = $data['year'];
     $subjects = $data['subjects'];
+    $academic_year = $data['academic_year'];
 
     foreach ($subjects as $subject) {
         $enrollData = [
@@ -25,7 +26,7 @@ try {
             'subject_id' => $subject,
             'section_id' => $section,
             'semester' => $semester,
-            'academic_year' => $year,
+            'academic_year' => $academic_year,
             'year_level' => $year,
         ];
 

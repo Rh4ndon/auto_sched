@@ -10,12 +10,14 @@ if (isset($_POST['submit'])) {
     $subject_name = $_POST['subject_name'];
     $semester = $_POST['semester'];
     $year_level = $_POST['year_level'];
+    $subject_type = $_POST['subject_type'];
 
     $data = [
         'subject_code' => $subject_code,
         'subject_name' => $subject_name,
         'semester' => $semester,
-        'year_level' => $year_level
+        'year_level' => $year_level,
+        'subject_type' => $subject_type
     ];
 
     if (insertRecord('subjects', $data)) {

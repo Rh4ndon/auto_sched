@@ -20,7 +20,17 @@ if (isset($_POST['submit'])) {
         'gender' => $student_gender
     ];
 
-    if (insertRecord('users', $data)) {
-        header('location:../views/admin/admin-students.php?msg=Student added successfully');
+
+
+    // Check for duplicate email
+    $existingStudent = getRecord('users', "email = '$student_email'");
+    if ($existingStudent) {
+        header('location:../views/admin/admin-students.php?msg=Email already exists');
+    } else {
+        if (insertRecord('users', $data)) {
+            header('location:../views/admin/admin-students.php?msg=Student added successfully');
+        } else {
+            header('location:../views/admin/admin-students.php?msg=Error adding student');
+        }
     }
 }
