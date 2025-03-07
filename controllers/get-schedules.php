@@ -102,7 +102,7 @@ foreach ($timeSlots as $timeSlot) {
     }
 
     // Mark Friday as Online Class
-    $row['friday'] = 'Online Class';
+    //$row['friday'] = 'Online Class';
 
     $response[] = $row;
 }

@@ -106,13 +106,13 @@ function assignSchedule($conn, $subjectId, $teacherId, $roomId, $day, $start, $e
     }
 }
 
-function checkSubjectOnDay($conn, $subjectId, $day, $sectionId, $semester, $academicYear)
+function checkSubjectOnDay($conn, $subjectId, $day, $sectionId, $semester, $academicYear, $examType)
 {
     $stmt = $conn->prepare("
         SELECT 1 FROM schedules 
-        WHERE subject_id = ? AND day = ? AND section_id = ? AND semester = ? AND academic_year = ?
+        WHERE subject_id = ? AND day = ? AND section_id = ? AND semester = ? AND academic_year = ? AND exam_type = ?
     ");
-    $stmt->bind_param('issss', $subjectId, $day, $sectionId, $semester, $academicYear);
+    $stmt->bind_param('isssss', $subjectId, $day, $sectionId, $semester, $academicYear, $examType);
     $stmt->execute();
     return $stmt->get_result()->num_rows > 0;
 }
@@ -133,10 +133,10 @@ function getTeachers($conn, $semester, $academicYear)
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
 
-function getExistingSchedules($conn, $semester, $academicYear)
+function getExistingSchedules($conn, $semester, $academicYear, $examType)
 {
-    $stmt = $conn->prepare("SELECT * FROM schedules WHERE semester = ? AND academic_year = ?");
-    $stmt->bind_param('ss', $semester, $academicYear);
+    $stmt = $conn->prepare("SELECT * FROM schedules WHERE semester = ? AND academic_year = ? AND exam_type = ?");
+    $stmt->bind_param('sss', $semester, $academicYear, $examType);
     $stmt->execute();
     return $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 }
@@ -177,10 +177,16 @@ if (isset($_POST['submit'])) {
     $academicYear = $_POST['academic_year'];
 
     // Check for existing schedules
-    $existingSchedules = getExistingSchedules($conn, $semester, $academicYear);
+    $existingSchedules = getExistingSchedules($conn, $semester, $academicYear, $examType);
     if (!empty($existingSchedules)) {
-        header("Location: ../views/admin/admin-scheduler.php?error=Schedules already exist for the selected semester and academic year.");
-        exit();
+        if ($examType === 'none') {
+
+            header("Location: ../views/admin/admin-scheduler.php?error=Class Schedules already exist for the selected semester and academic year.");
+            exit();
+        } else {
+            header("Location: ../views/admin/admin-scheduler.php?error=Exam Schedules already exist for the selected semester and academic year.");
+            exit();
+        }
     }
 
     // Check for Enrolled students
@@ -211,80 +217,176 @@ if (isset($_POST['submit'])) {
         'pe' => getClassrooms($conn, 'pe')
     ];
 
-    // === UPDATED SCHEDULING LOGIC ===
-    foreach ($sections as $section) {
-        $sectionId = $section['id'];
-        $subjects = getSubjectsForSection($conn, $sectionId, $semester, $academicYear);
+    if ($examType === 'none') {
+        // === SEMESTER SCHEDULING LOGIC ===
+        foreach ($sections as $section) {
+            $sectionId = $section['id'];
+            $subjects = getSubjectsForSection($conn, $sectionId, $semester, $academicYear);
 
-        $daySubjectHistory = []; // Track subjects assigned per day
-        $classroomUsage = []; // Track classroom usage per day
-        $subjectLoad = array_fill_keys($days, 0); // Track the number of subjects scheduled per day
+            $daySubjectHistory = []; // Track subjects assigned per day
+            $classroomUsage = []; // Track classroom usage per day
+            $subjectLoad = array_fill_keys($days, 0); // Track the number of subjects scheduled per day
 
-        shuffle($subjects); // Randomize subjects   
-        foreach ($subjects as $subject) {
-            $rooms = $classrooms[$subject['subject_type']]; // Use pre-fetched classrooms
+            shuffle($subjects); // Randomize subjects   
+            foreach ($subjects as $subject) {
+                $rooms = $classrooms[$subject['subject_type']]; // Use pre-fetched classrooms
 
-            if (empty($rooms)) {
-                header("Location: ../views/admin/admin-scheduler.php?error=No classrooms found for subject type: {$subject['subject_type']}.");
-                exit();
-            }
+                if (empty($rooms)) {
+                    header("Location: ../views/admin/admin-scheduler.php?error=No classrooms found for subject type: {$subject['subject_type']}.");
+                    exit();
+                }
 
-            $requiredSlots = ceil($subject['minutes_per_week'] / ($subject['minutes_per_week'] === 90 ? 90 : 60)); // Calculate slots based on minutes_per_week
-            $scheduledSlots = 0;
+                $requiredSlots = ceil($subject['minutes_per_week'] / ($subject['minutes_per_week'] === 90 ? 90 : 60)); // Calculate slots based on minutes_per_week
+                $scheduledSlots = 0;
 
-            // Sort days by least loaded first (to balance the schedule)
-            uasort($days, function ($a, $b) use ($subjectLoad) {
-                return $subjectLoad[$a] <=> $subjectLoad[$b];
-            });
+                // Sort days by least loaded first (to balance the schedule)
+                uasort($days, function ($a, $b) use ($subjectLoad) {
+                    return $subjectLoad[$a] <=> $subjectLoad[$b];
+                });
 
-            foreach ($days as $day) {
+                foreach ($days as $day) {
 
-                $duration = ($subject['minutes_per_week'] === 90) ? 90 : 60;
-                $daySlots = generateDaySlots($schoolHours, $lunchBreak, $duration);
+                    $duration = ($subject['minutes_per_week'] === 90) ? 90 : 60;
+                    $daySlots = generateDaySlots($schoolHours, $lunchBreak, $duration);
 
-                $classroomUsage[$day] = $classroomUsage[$day] ?? [];
+                    $classroomUsage[$day] = $classroomUsage[$day] ?? [];
 
-                foreach ($rooms as $room) {
-                    // Skip if classroom is already used in this day
-                    if (in_array($room['id'], $classroomUsage[$day])) {
-                        continue;
-                    }
-
-                    foreach ($daySlots as $slot) {
-                        [$start, $end] = $slot;
-
-                        // Check for conflicts
-                        if (checkConflict($conn, $day, $start, $end, $subject['teacher_id'], $room['id'], $sectionId, $semester, $academicYear, $examType)) {
+                    foreach ($rooms as $room) {
+                        // Skip if classroom is already used in this day
+                        if (in_array($room['id'], $classroomUsage[$day])) {
                             continue;
                         }
 
-                        // Skip if subject was already scheduled earlier that day
-                        if (checkSubjectOnDay($conn, $subject['id'], $day,  $sectionId, $semester, $academicYear)) {
-                            continue;
-                        }
+                        foreach ($daySlots as $slot) {
+                            [$start, $end] = $slot;
+
+                            // Check for conflicts
+                            if (checkConflict($conn, $day, $start, $end, $subject['teacher_id'], $room['id'], $sectionId, $semester, $academicYear, $examType)) {
+                                continue;
+                            }
+
+                            // Skip if subject was already scheduled earlier that day
+                            if (checkSubjectOnDay($conn, $subject['id'], $day,  $sectionId, $semester, $academicYear, $examType)) {
+                                continue;
+                            }
 
 
-                        // Assign the schedule
-                        assignSchedule($conn, $subject['id'], $subject['teacher_id'], $room['id'], $day, $start, $end, $semester, $academicYear, $examType, $subject['subject_type'], $sectionId);
-                        $scheduledSlots++;
+                            // Assign the schedule
+                            assignSchedule($conn, $subject['id'], $subject['teacher_id'], $room['id'], $day, $start, $end, $semester, $academicYear, $examType, $subject['subject_type'], $sectionId);
+                            $scheduledSlots++;
 
-                        // Track subject and classroom usage
-                        $daySubjectHistory[$day][] = $subject['id'];
-                        $classroomUsage[$day][] = $room['id'];
+                            // Track subject and classroom usage
+                            $daySubjectHistory[$day][] = $subject['id'];
+                            $classroomUsage[$day][] = $room['id'];
 
-                        // Increment the subject load for this day
-                        $subjectLoad[$day]++;
+                            // Increment the subject load for this day
+                            $subjectLoad[$day]++;
 
-                        // Break if all required slots are scheduled
-                        if ($scheduledSlots >= $requiredSlots) {
-                            break 3; // Exit both inner loops
+                            // Break if all required slots are scheduled
+                            if ($scheduledSlots >= $requiredSlots) {
+                                break 3; // Exit both inner loops
+                            }
                         }
                     }
                 }
             }
         }
-    }
 
-    header("Location: ../views/admin/admin-scheduler.php?msg=Schedules generated successfully.");
-    exit();
+        // Check if all subjects were scheduled base on minutes_per_week
+        foreach ($subjects as $subject) {
+            $requiredSlots = ceil($subject['minutes_per_week'] / ($subject['minutes_per_week'] === 90 ? 90 : 60)); // Calculate slots based on minutes_per_week
+            $scheduledSlots = 0;
+
+            foreach ($days as $day) {
+                if (checkSubjectOnDay($conn, $subject['id'], $day,  $sectionId, $semester, $academicYear, $examType)) {
+                    $scheduledSlots++;
+                }
+            }
+
+            if ($scheduledSlots < $requiredSlots) {
+                header("Location: ../views/admin/admin-scheduler.php?error=Schedule was complete, But there were some issues. Not enough slots for subject: {$subject['subject_name']}.  Please adjust minutes_per_week for this subject or add more rooms or teachers.");
+                exit();
+            }
+        }
+
+        header("Location: ../views/admin/admin-scheduler.php?msg=Class Schedules generated successfully.");
+        exit();
+    } else {
+        // === EXAM SCHEDULING LOGIC ===
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+        // === SEMESTER SCHEDULING LOGIC ===
+        foreach ($sections as $section) {
+            $sectionId = $section['id'];
+            $subjects = getSubjectsForSection($conn, $sectionId, $semester, $academicYear);
+
+            $daySubjectHistory = []; // Track subjects assigned per day
+            $classroomUsage = []; // Track classroom usage per day
+            $subjectLoad = array_fill_keys($days, 0); // Track the number of subjects scheduled per day
+
+            shuffle($subjects); // Randomize subjects   
+            foreach ($subjects as $subject) {
+                if ($subject['subject_type'] === 'lab') {
+                    continue;
+                }
+                $rooms = $classrooms[$subject['subject_type']]; // Use pre-fetched classrooms
+
+                if (empty($rooms)) {
+                    header("Location: ../views/admin/admin-scheduler.php?error=No classrooms found for subject type: {$subject['subject_type']}.");
+                    exit();
+                }
+
+                $requiredSlots = 1; // In Exam Scheduling, each subject has only one slot
+                $scheduledSlots = 0;
+
+                // Sort days by least loaded first (to balance the schedule)
+                /*
+                uasort($days, function ($a, $b) use ($subjectLoad) {
+                    return $subjectLoad[$a] <=> $subjectLoad[$b];
+                });
+                */
+
+                foreach ($days as $day) {
+
+                    $duration = ($subject['minutes_per_week'] === 90) ? 90 : 60;
+                    $daySlots = generateDaySlots($schoolHours, $lunchBreak, $duration);
+
+                    $classroomUsage[$day] = $classroomUsage[$day] ?? [];
+
+                    foreach ($rooms as $room) {
+                        // Skip if classroom is already used in this day
+                        if (in_array($room['id'], $classroomUsage[$day])) {
+                            continue;
+                        }
+
+                        foreach ($daySlots as $slot) {
+                            [$start, $end] = $slot;
+
+                            // Check for conflicts
+                            if (checkConflict($conn, $day, $start, $end, $subject['teacher_id'], $room['id'], $sectionId, $semester, $academicYear, $examType)) {
+                                continue;
+                            }
+
+                            // Assign the schedule
+                            assignSchedule($conn, $subject['id'], $subject['teacher_id'], $room['id'], $day, $start, $end, $semester, $academicYear, $examType, $subject['subject_type'], $sectionId);
+                            $scheduledSlots++;
+
+                            // Track subject and classroom usage
+                            $daySubjectHistory[$day][] = $subject['id'];
+                            $classroomUsage[$day][] = $room['id'];
+
+                            // Increment the subject load for this day
+                            $subjectLoad[$day]++;
+
+                            // Break if all required slots are scheduled
+                            if ($scheduledSlots >= $requiredSlots) {
+                                break 3; // Exit both inner loops
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        header("Location: ../views/admin/admin-scheduler.php?msg=Exam Schedules generated successfully.");
+        exit();
+    }
 }
