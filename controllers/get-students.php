@@ -27,10 +27,13 @@ if (!empty($students)) {
         $semester = 'Not Yet Enrolled';
         $year_level = 'Not Yet Enrolled';
         $section_name = 'Not Yet Enrolled';
+        $units = 0;
 
         if (!empty($enrollments)) {
             // Collect all subjects
             foreach ($enrollments as $enrollment) {
+
+                $units += $enrollment['units'];
 
                 if ($enrollment['semester'] == 1) {
                     $semester = '1st Semester';
@@ -79,6 +82,7 @@ if (!empty($students)) {
             'semester' => $semester,
             'year_level' => $year_level,
             'subjects' => $subjects,
+            'units' => $units,
             'id' => $student['id'],
             'debug' => $debug
         );

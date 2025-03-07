@@ -23,6 +23,8 @@ if (isset($_POST['submit'])) {
     $semester = $_POST['semester'];
     $year_level = $_POST['year_level'];
     $subject_type = $_POST['subject_type'];
+    $minutes_per_week = $_POST['minutes_per_week'];
+    $units = $_POST['units'];
 
 
     $data = [
@@ -31,6 +33,8 @@ if (isset($_POST['submit'])) {
         'semester' => $semester,
         'year_level' => $year_level,
         'subject_type' => $subject_type,
+        'minutes_per_week' => $minutes_per_week,
+        'units' => $units
     ];
 
     if (editRecord('subjects', $data, "id = $subject_id")) {

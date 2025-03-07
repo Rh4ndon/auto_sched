@@ -332,6 +332,7 @@
         });
     });
 
+
     function showAlert(message, type = 'success') {
         // Remove existing alert if any
         let existingAlert = document.querySelector('.floating-alert');
@@ -344,11 +345,11 @@
         alertDiv.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
         alertDiv.setAttribute('role', 'alert');
         alertDiv.innerHTML = `
-										<strong>Success!</strong> ${message}
-										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-											<span aria-hidden="true">&times;</span>
-										</button>
-									`;
+            <strong>${type === 'success' ? 'Success' : 'Error'}!</strong> ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        `;
 
         // Append to body
         document.body.appendChild(alertDiv);
@@ -363,6 +364,9 @@
 <?php
 if (isset($_GET['msg'])) {
     echo "<script>showAlert('{$_GET['msg']}')</script>";
+}
+if (isset($_GET['error'])) {
+    echo "<script>showAlert('{$_GET['error']}', 'danger')</script>";
 }
 ?>
 <?php @include 'footer.php'; ?>

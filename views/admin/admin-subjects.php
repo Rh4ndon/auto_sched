@@ -44,6 +44,10 @@
                                                 <input type="text" name="subject_name" class="form-control" id="subject_name" placeholder="Enter subject name">
                                             </div>
                                             <div class="form-group">
+                                                <label for="units">Units</label>
+                                                <input type="number" name="units" min="1" max="3" class="form-control" id="units" placeholder="Enter subject units">
+                                            </div>
+                                            <div class="form-group">
                                                 <label for="semester">Semester</label>
                                                 <select name="semester" class="form-control" id="semester">
                                                     <option value="1">1st</option>
@@ -61,8 +65,15 @@
                                                 <select name="subject_type" id="subject_type" class="form-control" placeholder="Enter subject type">
                                                     <option value="lecture">Lecture</option>
                                                     <option value="lab">Lab</option>
+                                                    <option value="pe">PE</option>
                                                 </select>
                                             </div>
+
+                                            <div class="form-group">
+                                                <label for="minutes_per_week">Minutes Per Week (exclude Online Classes)</label>
+                                                <input type="number" name="minutes_per_week" class="form-control" id="minutes_per_week" placeholder="Enter minutes per week" title="Please exclude online classes">
+                                            </div>
+
 
                                             <button type="submit" name="submit" class="btn btn-primary">Submit</button>
                                         </form>
@@ -89,6 +100,8 @@
                                                         <th>Semester</th>
                                                         <th>Year Level</th>
                                                         <th>Subject Type</th>
+                                                        <th>Units</th>
+                                                        <th>Mins/Week</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -132,7 +145,8 @@
                                                                     <td>${subject.semester}</td>
                                                                     <td>${subject.year_level}</td>
                                                                     <td>${subject.subject_type}</td>
-
+                                                                    <td>${subject.units}</td>
+                                                                    <td>${subject.minutes_per_week}</td>
                                                                     <td>
                                                                         <button class="btn btn-sm btn-warning" onclick="editSubject(${subject.id})">Edit</button>
                                                                         <button class="btn btn-sm btn-danger" onclick="deleteSubject(${subject.id})">Delete</button>
@@ -171,6 +185,8 @@
                 document.getElementById('semester').value = subject.semester;
                 document.getElementById('year_level').value = subject.year_level;
                 document.getElementById('subject_type').value = subject.subject_type;
+                document.getElementById('minutes_per_week').value = subject.minutes_per_week;
+                document.getElementById('units').value = subject.units;
                 document.querySelector('form').action = `../../controllers/edit-subject.php?id=${id}`;
             })
             .catch(error => console.error('Error fetching subject:', error));
@@ -186,6 +202,7 @@
         });
     });
 
+
     function showAlert(message, type = 'success') {
         // Remove existing alert if any
         let existingAlert = document.querySelector('.floating-alert');
@@ -198,11 +215,11 @@
         alertDiv.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
         alertDiv.setAttribute('role', 'alert');
         alertDiv.innerHTML = `
-										<strong>Success!</strong> ${message}
-										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-											<span aria-hidden="true">&times;</span>
-										</button>
-									`;
+            <strong>${type === 'success' ? 'Success' : 'Error'}!</strong> ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        `;
 
         // Append to body
         document.body.appendChild(alertDiv);
@@ -217,6 +234,9 @@
 <?php
 if (isset($_GET['msg'])) {
     echo "<script>showAlert('{$_GET['msg']}')</script>";
+}
+if (isset($_GET['error'])) {
+    echo "<script>showAlert('{$_GET['error']}', 'danger')</script>";
 }
 ?>
 <?php @include 'footer.php'; ?>

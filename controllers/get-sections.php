@@ -17,7 +17,8 @@ if (!empty($sections)) {
             'semester' => $semester,
             'year_level' => $row['year_level'],
             'id' => $row['id'],
-            'academic_year' => $row['academic_year']
+            'academic_year' => $row['academic_year'],
+            'student_count' => $row['student_count']
         );
     }
 } else {

@@ -51,8 +51,8 @@
                     </div>
                     <div class="collapse" id="nav-user-link">
                         <ul class="list-unstyled">
-                            <li class="list-group-item"><a href="user-profile.html"><i class="feather icon-user m-r-5"></i>View Profile</a></li>
-                            <li class="list-group-item"><a href="#!"><i class="feather icon-settings m-r-5"></i>Settings</a></li>
+                            <li class="list-group-item"><a href="admin-profile.php"><i class="feather icon-user m-r-5"></i>Edit Profile</a></li>
+                            <li class="list-group-item"><a href="#"><i class="feather icon-settings m-r-5"></i>Settings</a></li>
                             <li class="list-group-item"><a href="../../controllers/logout.php"><i class="feather icon-log-out m-r-5"></i>Logout</a></li>
                         </ul>
                     </div>
@@ -263,7 +263,7 @@
                                 </a>
                             </div>
                             <ul class="pro-body">
-                                <li><a href="user-profile.html" class="dropdown-item"><i class="feather icon-user"></i> Profile</a></li>
+                                <li><a href="admin-profile.php" class="dropdown-item"><i class="feather icon-user"></i> Edit Profile</a></li>
 
                             </ul>
                         </div>

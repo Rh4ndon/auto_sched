@@ -20,7 +20,27 @@ try {
     $subjects = $data['subjects'];
     $academic_year = $data['academic_year'];
 
+    // Check for units enrolled
+    $units_enrolled = 0;
     foreach ($subjects as $subject) {
+        $subject_record = getRecord('subjects', "id = '$subject'");
+        $units_enrolled += $subject_record['units'];
+    }
+
+    if ($units_enrolled > 26) {
+        throw new Exception('Student cannot enroll in more than 26 units');
+    }
+
+    // Check if the student is already enrolled in any section
+    $enrollments = getRecord('enrollments', "student_id = '$id'");
+    if (empty($enrollments)) {
+        $sectionRecord = getRecord('sections', "id = '$section'");
+        $newStudentCount = $sectionRecord['student_count'] + 1;
+        editRecord('sections', ['student_count' => $newStudentCount], "id = '$section'");
+    }
+
+    foreach ($subjects as $subject) {
+        $subjectUnits = getRecord('subjects', "id = '$subject'");
         $enrollData = [
             'student_id' => $id,
             'subject_id' => $subject,
@@ -28,6 +48,7 @@ try {
             'semester' => $semester,
             'academic_year' => $academic_year,
             'year_level' => $year,
+            'units' => $subjectUnits['units'],
         ];
 
         $enrollSuccess = insertRecord('enrollments', $enrollData);

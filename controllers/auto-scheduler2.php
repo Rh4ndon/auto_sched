@@ -38,17 +38,18 @@ function getClassrooms($conn, $type)
 }
 
 // Function to check for scheduling conflicts
-function checkConflict($conn, $day, $startTime, $endTime, $teacherId, $classroomId, $sectionId, $semester, $academicYear)
+function checkConflict($conn, $day, $exam_type, $startTime, $endTime, $teacherId, $classroomId, $sectionId, $semester, $academicYear)
 {
     $stmt = $conn->prepare("
         SELECT * FROM schedules 
         WHERE day = ? 
+        AND exam_type = ?
         AND ((start_time < ? AND end_time > ?) OR (start_time < ? AND end_time > ?)) 
         AND (teacher_id = ? OR classroom_id = ? OR section_id = ?) 
         AND semester = ? 
         AND academic_year = ?
     ");
-    $stmt->bind_param('sssssiiiss', $day, $endTime, $startTime, $startTime, $endTime, $teacherId, $classroomId, $sectionId, $semester, $academicYear);
+    $stmt->bind_param('sssssiiisss', $day, $exam_type, $endTime, $startTime, $startTime, $endTime, $teacherId, $classroomId, $sectionId, $semester, $academicYear);
     $stmt->execute();
     return $stmt->get_result()->num_rows > 0;
 }
@@ -97,26 +98,26 @@ if (isset($_POST['submit'])) {
 
     $days = [
         'lecture' => ['Monday', 'Wednesday', 'Friday'],
-        'lab' => ['Tuesday', 'Thursday'] // Ensure both Tuesday and Thursday are included
+        'lab' => ['Tuesday', 'Thursday']
     ];
 
     $timeSlots = [
         'lecture' => [
             ['07:00:00', '08:00:00'],
-            ['08:10:00', '09:10:00'],
-            ['09:20:00', '10:20:00'],
-            ['10:30:00', '11:30:00'],
-            ['11:30:00', '12:30:00'],
-            ['13:30:00', '14:30:00'],
-            ['14:40:00', '15:40:00'],
-            ['15:50:00', '16:50:00']
+            ['08:00:00', '09:00:00'],
+            ['09:00:00', '10:00:00'],
+            ['10:00:00', '11:00:00'],
+            ['11:00:00', '12:00:00'],
+            ['13:00:00', '14:00:00'],
+            ['14:00:00', '15:00:00'],
+            ['15:00:00', '16:00:00']
         ],
         'lab' => [
             ['07:00:00', '08:30:00'],
-            ['08:40:00', '10:10:00'],
-            ['10:20:00', '11:50:00'],
+            ['08:30:00', '10:00:00'],
+            ['10:00:00', '11:30:00'],
             ['13:00:00', '14:30:00'],
-            ['14:40:00', '16:10:00']
+            ['14:30:00', '16:00:00']
         ]
     ];
 
@@ -129,27 +130,20 @@ if (isset($_POST['submit'])) {
             while ($classroom = $classrooms->fetch_assoc()) {
                 if ($subject['students_count'] <= $classroom['capacity']) {
                     foreach ($days[$subjectType] as $day) {
-                        // Debugging: Print the day being processed
-                        echo "Processing $day for subject " . $subject['id'] . " (Section " . $subject['section_id'] . ")\n";
-
                         // Check if the subject is already scheduled for this section on this day
                         if (!isSubjectScheduled($conn, $subject['id'], $subject['section_id'], $day, $semester, $academicYear)) {
                             foreach ($timeSlots[$subjectType] as $slot) {
-                                $conflict = checkConflict($conn, $day, $slot[0], $slot[1], $subject['teacher_id'], $classroom['id'], $subject['section_id'], $semester, $academicYear);
+                                $conflict = checkConflict($conn, $day, $examType, $slot[0], $slot[1], $subject['teacher_id'], $classroom['id'], $subject['section_id'], $semester, $academicYear);
                                 if (!$conflict) {
-                                    echo "Scheduling {$subject['subject_name']} on $day at {$slot[0]} - {$slot[1]} in classroom {$classroom['room_number']}\n";
                                     assignSchedule($conn, $subject['id'], $subject['teacher_id'], $classroom['id'], $day, $slot[0], $slot[1], $semester, $academicYear, $examType, $subjectType, $subject['section_id']);
                                     continue 2; // Move to the next subject after scheduling
                                 } else {
-                                    echo "Conflict detected for {$subject['subject_name']} on $day at {$slot[0]} - {$slot[1]}\n";
                                 }
                             }
                         } else {
-                            echo "Subject {$subject['subject_name']} already scheduled for section {$subject['section_id']} on $day\n";
                         }
                     }
                 } else {
-                    echo "Capacity mismatch for subject {$subject['subject_name']} (Students: {$subject['students_count']}, Room: {$classroom['capacity']})\n";
                 }
             }
         }

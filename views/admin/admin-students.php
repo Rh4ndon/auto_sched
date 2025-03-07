@@ -75,11 +75,12 @@
                                                         <th>Name</th>
                                                         <th>Email</th>
                                                         <th>Gender</th>
-                                                        <th>Course-Section</th>
+                                                        <th>Section</th>
                                                         <th>Subject Code</th>
                                                         <th>Subject Name</th>
                                                         <th>Semester</th>
                                                         <th>Year Level</th>
+                                                        <th>Units</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -173,6 +174,13 @@
                     option.innerText = `${subject.subject_code} (${subject.subject_name})`;
                     enrollSubjects.appendChild(option);
                 });
+                // Store subjects for later use
+                window.subjects = data.reduce((acc, subject) => {
+                    acc[subject.id] = subject.units;
+                    return acc;
+                }, {});
+
+                console.log(subjects);
             })
             .catch(error => console.error('Error fetching subjects:', error));
     });
@@ -219,6 +227,7 @@
                                                                     </td>
                                                                     <td>${student.semester}</td>
                                                                     <td>${student.year_level}</td>
+                                                                    <td>${student.units}</td>
 
                                                                     <td>
                                                                         <button class="btn btn-sm btn-primary mb-2" onclick="enrollStudent(${student.id})" ${student.section === 'Not Yet Enrolled' ? '' : 'style="display:none;"'}>Enroll</button>
@@ -248,6 +257,7 @@
                         row.querySelector('td:nth-child(7)').innerText = 'Not Yet Enrolled';
                         row.querySelector('td:nth-child(8)').innerText = 'Not Yet Enrolled';
                         row.querySelector('td:nth-child(9)').innerText = 'Not Yet Enrolled';
+                        row.querySelector('td:nth-child(10)').innerText = 0;
                         row.querySelector('button:nth-child(1)').style.display = '';
                         row.querySelector('button:nth-child(2)').style.display = 'none';
                     } else {
@@ -364,11 +374,17 @@
                             yearText = year + ' Year';
                     }
                     row.querySelector('td:nth-child(9)').innerText = yearText;
+                    let units = 0;
+                    data.subjects.forEach(subject => {
+                        units += parseInt(window.subjects[subject.id], 10);
+                    });
+                    row.querySelector('td:nth-child(10)').innerText = units;
                     row.querySelector('button:nth-child(1)').style.display = 'none';
                     row.querySelector('button:nth-child(2)').style.display = '';
                     $('#enrollModal').modal('hide');
                 } else {
-                    showAlert('Failed to enroll student', 'danger');
+                    showAlert('Failed to enroll student' + (data.error ? ': ' + data.error : ''), 'danger');
+
                     console.error(data.error);
                 }
             })
@@ -388,6 +404,7 @@
         });
     });
 
+
     function showAlert(message, type = 'success') {
         // Remove existing alert if any
         let existingAlert = document.querySelector('.floating-alert');
@@ -400,11 +417,11 @@
         alertDiv.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
         alertDiv.setAttribute('role', 'alert');
         alertDiv.innerHTML = `
-										<strong>Success!</strong> ${message}
-										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-											<span aria-hidden="true">&times;</span>
-										</button>
-									`;
+            <strong>${type === 'success' ? 'Success' : 'Error'}!</strong> ${message}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        `;
 
         // Append to body
         document.body.appendChild(alertDiv);
@@ -419,6 +436,9 @@
 <?php
 if (isset($_GET['msg'])) {
     echo "<script>showAlert('{$_GET['msg']}')</script>";
+}
+if (isset($_GET['error'])) {
+    echo "<script>showAlert('{$_GET['error']}', 'danger')</script>";
 }
 ?>
 <?php @include 'footer.php'; ?>

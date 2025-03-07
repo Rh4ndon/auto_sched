@@ -13,6 +13,8 @@ if (!empty($subjects)) {
         }
         if ($row['subject_type'] == 'lecture') {
             $subject_type = 'Lecture';
+        } elseif ($row['subject_type'] == 'pe') {
+            $subject_type = 'PE';
         } else {
             $subject_type = 'Lab';
         }
@@ -23,6 +25,8 @@ if (!empty($subjects)) {
             'semester' => $semester,
             'year_level' => $row['year_level'],
             'subject_type' => $subject_type,
+            'minutes_per_week' => $row['minutes_per_week'],
+            'units' => $row['units'],
             'id' => $row['id']
         );
     }

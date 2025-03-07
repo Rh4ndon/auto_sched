@@ -99,6 +99,20 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5>Students per Section</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <ul id="students_per_section" style="font-size: 1.2em;">
+                                                            <li>Loading...</li>
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <script>
                                             document.addEventListener('DOMContentLoaded', function() {
@@ -111,6 +125,14 @@
                                                         document.getElementById('total_sections').innerHTML = '<i class="feather icon-layers"></i> Total Sections: ' + data.total_sections;
                                                         document.getElementById('total_enrollments').innerHTML = '<i class="feather icon-check-square"></i> Total Enrollments: ' + data.total_enrollments;
                                                         document.getElementById('total_classrooms').innerHTML = '<i class="feather icon-home"></i> Total Classrooms: ' + data.total_classrooms;
+
+                                                        const studentsPerSectionList = document.getElementById('students_per_section');
+                                                        studentsPerSectionList.innerHTML = '';
+                                                        for (const [section, count] of Object.entries(data.total_students_per_section)) {
+                                                            const listItem = document.createElement('li');
+                                                            listItem.textContent = `${section}: ${count} students`;
+                                                            studentsPerSectionList.appendChild(listItem);
+                                                        }
                                                     })
                                                     .catch(error => console.error('Error fetching dashboard data:', error));
                                             });
