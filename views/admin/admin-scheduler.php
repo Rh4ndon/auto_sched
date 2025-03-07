@@ -8,7 +8,7 @@
                 <div class="main-body">
                     <div class="page-wrapper">
                         <!-- [ breadcrumb ] start -->
-                        <div class="page-header">
+                        <div class="page-header dont-print">
                             <div class="page-block">
                                 <div class="row align-items-center">
                                     <div class="col-md-12">
@@ -26,7 +26,7 @@
                         </div>
                         <!-- [ breadcrumb ] end -->
                         <!-- [ Main Content ] start -->
-                        <div class="row">
+                        <div class="row dont-print">
 
                             <div class="col-sm-4 ml-5">
                                 <div class="card">
@@ -141,8 +141,9 @@
                                 }
                             </style>
 
-                            <div class="container mt-4 bg-white p-4">
-                                <h3 class="text-center">CLASS SCHEDULE</h3>
+                            <div class="container mt-4 bg-white p-4 print-this">
+                                <button type="button" class="btn btn-primary dont-print" id="printButton" onclick="printSchedule()">Print</button>
+                                <h3 class="text-center" id="scheduleTypeHeader">CLASS SCHEDULE</h3>
                                 <h5 class="text-center" id="scheduleHeader">Second Semester, SY: 2024 - 2025</h5>
                                 <h6 class="text-center" id="sectionHeader">BSIT-1A</h6>
 
@@ -194,14 +195,15 @@
                     <td class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
                     <td class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
                     <td class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
-                    <td class="${row.friday === 'Online Class' ? 'online-class' : ''}">${row.friday}</td>
+                    <td class="${row.friday === 'Online Class' ? 'online-class' : ''} ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
                 `;
                                                 scheduleTable.appendChild(tr);
                                             });
 
                                             // Update headers
-                                            document.getElementById('scheduleHeader').innerText = `${type === 'none' ? 'Class' : type} Schedule, SY: ${academicYear}`;
+                                            document.getElementById('scheduleHeader').innerText = `${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule, SY: ${academicYear}`;
                                             document.getElementById('sectionHeader').innerText = window.sections[section];
+                                            document.getElementById('scheduleTypeHeader').innerText = `${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Prelims' : 'midterm' ? 'Midterms' : 'final' ? 'Finals' : ''} Schedule`;
                                         })
                                         .catch(error => {
                                             console.error('Error fetching schedule:', error);
@@ -229,6 +231,13 @@
 
 
 <script>
+    // Print Schedule
+    function printSchedule() {
+        // only print the table mark class dont-print as display none
+        window.print();
+
+    }
+
     // Fetch all sections
     document.addEventListener('DOMContentLoaded', function() {
         fetch('../../controllers/get-sections.php')
@@ -259,7 +268,7 @@
 
         // Create the alert element
         let alertDiv = document.createElement('div');
-        alertDiv.className = `alert alert-${type} alert-dismissible fade show floating-alert`;
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show floating-alert dont-print`;
         alertDiv.setAttribute('role', 'alert');
         alertDiv.innerHTML = `
             <strong>${type === 'success' ? 'Success' : 'Error'}!</strong> ${message}

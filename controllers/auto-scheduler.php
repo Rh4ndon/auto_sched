@@ -19,22 +19,7 @@ function debugPrint($title, $data)
     }
 }
 
-// === CONFIGURATION ===
-$schoolHours = [
-    ['07:00 AM', '08:00 AM'],
-    ['07:00 AM', '08:30 AM'],
-    ['09:00 AM', '10:00 AM'],
-    ['09:00 AM', '10:30 AM'],
-    ['11:00 AM', '12:00 PM'],
-    ['01:00 PM', '02:00 PM'],
-    ['01:00 PM', '01:30 PM'],
-    ['03:00 PM', '04:00 PM'],
-    ['03:00 PM', '04:30 PM'],
-    ['04:00 PM', '05:00 PM'],
-    ['04:00 PM', '05:30 PM']
-];
-$lunchBreak = ['12:00 PM', '01:00 PM'];
-$days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday'];
+
 
 // === HELPERS ===
 
@@ -218,6 +203,22 @@ if (isset($_POST['submit'])) {
     ];
 
     if ($examType === 'none') {
+        // === CONFIGURATION ===
+        $schoolHours = [
+            ['07:00 AM', '08:00 AM'],
+            ['07:00 AM', '08:30 AM'],
+            ['09:00 AM', '10:00 AM'],
+            ['09:00 AM', '10:30 AM'],
+            ['11:00 AM', '12:00 PM'],
+            ['01:00 PM', '02:00 PM'],
+            ['01:00 PM', '02:30 PM'],
+            ['03:00 PM', '04:00 PM'],
+            ['03:00 PM', '04:30 PM'],
+            ['04:00 PM', '05:00 PM'],
+            ['04:00 PM', '05:30 PM']
+        ];
+        $lunchBreak = ['12:00 PM', '01:00 PM'];
+        $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday'];
         // === SEMESTER SCHEDULING LOGIC ===
         foreach ($sections as $section) {
             $sectionId = $section['id'];
@@ -313,6 +314,16 @@ if (isset($_POST['submit'])) {
         exit();
     } else {
         // === EXAM SCHEDULING LOGIC ===
+
+
+        // === CONFIGURATION ===
+        $schoolHours = [
+            ['07:00 AM', '08:30 AM'],
+            ['09:30 AM', '11:00 AM'],
+            ['01:00 PM', '02:30 PM'],
+            ['03:30 PM', '05:00 PM']
+        ];
+        $lunchBreak = ['12:00 PM', '01:00 PM'];
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
         // === SEMESTER SCHEDULING LOGIC ===
         foreach ($sections as $section) {
@@ -325,9 +336,7 @@ if (isset($_POST['submit'])) {
 
             shuffle($subjects); // Randomize subjects   
             foreach ($subjects as $subject) {
-                if ($subject['subject_type'] === 'lab') {
-                    continue;
-                }
+
                 $rooms = $classrooms[$subject['subject_type']]; // Use pre-fetched classrooms
 
                 if (empty($rooms)) {
@@ -338,7 +347,7 @@ if (isset($_POST['submit'])) {
                 $requiredSlots = 1; // In Exam Scheduling, each subject has only one slot
                 $scheduledSlots = 0;
 
-                // Sort days by least loaded first (to balance the schedule)
+                // Sort days by least loaded first (to balance the schedule) We can use this if you want exam schedules to be balanced throughout the week
                 /*
                 uasort($days, function ($a, $b) use ($subjectLoad) {
                     return $subjectLoad[$a] <=> $subjectLoad[$b];
@@ -347,7 +356,7 @@ if (isset($_POST['submit'])) {
 
                 foreach ($days as $day) {
 
-                    $duration = ($subject['minutes_per_week'] === 90) ? 90 : 60;
+                    $duration =  90;
                     $daySlots = generateDaySlots($schoolHours, $lunchBreak, $duration);
 
                     $classroomUsage[$day] = $classroomUsage[$day] ?? [];
