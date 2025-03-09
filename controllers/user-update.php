@@ -16,6 +16,19 @@ if (isset($_POST['id'])) {
 
     $password = sha1(md5($password));
 
+    if ($password == sha1(md5('123456'))) {
+        if ($user_type == 'student') {
+            header('Location: ../views/student/student-profile.php?warning=Password cannot be the same as the default password');
+        } else if ($user_type == 'teacher') {
+            header('Location: ../views/teacher/teacher-profile.php?warning=Password cannot be the same as the default password');
+        } else if ($user_type == 'admin') {
+            header('Location: ../views/admin/admin-profile.php?warning=Password cannot be the same as the default password');
+        }
+        exit();
+    }
+
+
+
     editRecord('users', [
         'name' => $name,
         'user_type' => $user_type,
@@ -24,6 +37,15 @@ if (isset($_POST['id'])) {
         'password' => $password
     ], 'id = ' . $id);
 
-    header('Location: ../views/admin/admin-profile.php?msg=User updated successfully');
+    if ($user_type == 'student') {
+        header('Location: ../views/student/student-profile.php?msg=User updated successfully');
+        exit();
+    } else if ($user_type == 'teacher') {
+        header('Location: ../views/teacher/teacher-profile.php?msg=User updated successfully');
+        exit();
+    } else if ($user_type == 'admin') {
+        header('Location: ../views/admin/admin-profile.php?msg=User updated successfully');
+        exit();
+    }
     exit();
 }

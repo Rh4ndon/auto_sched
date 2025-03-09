@@ -305,7 +305,7 @@ if (isset($_POST['submit'])) {
             }
 
             if ($scheduledSlots < $requiredSlots) {
-                header("Location: ../views/admin/admin-scheduler.php?error=Schedule was complete, But there were some issues. Not enough slots for subject: {$subject['subject_name']}.  Please adjust minutes_per_week for this subject or add more rooms or teachers.");
+                header("Location: ../views/admin/admin-scheduler.php?warning=Schedule was complete, But there were some issues. Not enough slots for subject: {$subject['subject_name']}.  Please adjust minutes_per_week for this subject or add more rooms or teachers.");
                 exit();
             }
         }

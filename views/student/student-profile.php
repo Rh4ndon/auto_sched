@@ -1,6 +1,11 @@
 <?php @include 'header.php'; ?>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+<style>
+    .catch .pcoded-main-container {
+        margin-left: -30px !important;
+        max-width: 100% !important;
+    }
+</style>
 <!-- [ Main Content ] start -->
 <div class="pcoded-main-container">
     <div class="pcoded-wrapper">
@@ -14,10 +19,10 @@
                                 <div class="row align-items-center">
                                     <div class="col-md-12">
                                         <div class="page-header-title">
-                                            <h5 class="m-b-10">Admin-Profile</h5>
+                                            <h5 class="m-b-10">Student-Profile</h5>
                                         </div>
                                         <ul class="breadcrumb">
-                                            <li class="breadcrumb-item"><a href="admin-home.php"><i class="feather icon-home"></i></a></li>
+                                            <li class="breadcrumb-item"><a href="student-home.php"><i class="feather icon-home"></i></a></li>
                                             <li class="breadcrumb-item"><a href="#">Profile</a></li>
 
                                         </ul>
@@ -29,7 +34,7 @@
                         <!-- [ Main Content ] start -->
                         <div class="row">
 
-                            <div class="col-sm-4 ml-5">
+                            <div class="col-sm-4">
                                 <div class="card">
                                     <div class="card-header">
                                         <h5>Edit Profile <i class="feather icon-edit"></i> </h5>
@@ -38,7 +43,7 @@
 
                                         <form method="POST" action="../../controllers/user-update.php">
                                             <input type="hidden" name="id" value="<?php echo $_SESSION['id']; ?>">
-                                            <input type="hidden" name="user_type" value="admin">
+                                            <input type="hidden" name="user_type" value="student">
                                             <div class="form-group">
                                                 <label for="name">Name</label>
                                                 <input type="text" name="name" class="form-control" id="name" placeholder="Enter Name" required>
