@@ -360,61 +360,7 @@
         }
     });
 
-    console.log(window.students);
-    // Get Schedule
-    document.getElementById('getScheduleForm').addEventListener('submit', function(event) {
-        event.preventDefault();
 
-
-
-        const semester = document.getElementById('getSemester').value;
-        const type = document.getElementById('getType').value;
-        const section = window.students[0].section_id;
-        const academicYear = window.students[0].academic_year;
-
-        console.log(semester, type, section, academicYear);
-
-        fetch(`../../controllers/get-schedules.php?semester=${semester}&type=${type}&section=${section}&academic_year=${academicYear}`)
-            .then(response => {
-                if (!response.ok) {
-                    // Parse the JSON error message from the response
-                    return response.json().then(errorData => {
-                        // Throw an error with the message from the server
-                        throw new Error(errorData.message || 'Network response was not ok');
-                    });
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Fetched data:', data); // Debugging: Log the fetched data
-
-                const scheduleTable = document.getElementById('scheduleTable').getElementsByTagName('tbody')[0];
-                scheduleTable.innerHTML = ''; // Clear existing rows
-
-                // Populate the table
-                data.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                    <td class="${row.time === '12:00 PM - 01:00 PM' ? 'lunch-break' : ''}">${row.time}</td>
-                    <td class="${row.monday === 'Lunch Break' ? 'lunch-break' : ''}">${row.monday}</td>
-                    <td class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
-                    <td class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
-                    <td class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
-                    <td class="${row.friday === 'Online Class' ? 'online-class' : ''} ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
-                `;
-                    scheduleTable.appendChild(tr);
-                });
-
-                // Update headers
-                document.getElementById('scheduleHeader').innerText = `${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule, SY: ${academicYear}`;
-                document.getElementById('sectionHeader').innerText = window.students[0].section;
-                document.getElementById('scheduleTypeHeader').innerText = `${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Prelims' : 'midterm' ? 'Midterms' : 'final' ? 'Finals' : ''} Schedule`;
-            })
-            .catch(error => {
-                console.error('Error fetching schedule:', error);
-                showAlert('Error fetching schedule: ' + error, 'danger');
-            });
-    });
     // Print Schedule
     document.getElementById('printButton').addEventListener('click', function() {
         const div = document.getElementById('scheduleContainer');

@@ -14,11 +14,12 @@ $teacherId = $_GET['teacher_id'];
 
 // Fetch schedule data for the selected section, semester, and academic year
 $stmt = $conn->prepare("
-    SELECT schedules.*, subjects.subject_name, subjects.subject_code, users.name AS teacher_name, classrooms.room_number, subjects.subject_type
+    SELECT schedules.*, subjects.subject_name, subjects.subject_code, users.name AS teacher_name, classrooms.room_number, subjects.subject_type, sections.section_name
     FROM schedules
     INNER JOIN subjects ON schedules.subject_id = subjects.id
     INNER JOIN users ON schedules.teacher_id = users.id
     INNER JOIN classrooms ON schedules.classroom_id = classrooms.id
+    INNER JOIN sections ON schedules.section_id = sections.id
     WHERE schedules.teacher_id = ? AND schedules.semester = ? AND schedules.academic_year = ? AND schedules.exam_type = ?
     ORDER BY schedules.day, schedules.start_time
 ");
@@ -114,7 +115,7 @@ foreach ($timeSlots as $timeSlot) {
         $scheduleTimeSlot = formatTime($schedule['start_time']) . ' - ' . formatTime($schedule['end_time']);
         if ($scheduleTimeSlot === $timeSlot) {
             $day = strtolower($schedule['day']);
-            $subjectInfo = $schedule['subject_code'] . ' <br> ' . $schedule['teacher_name'];
+            $subjectInfo = $schedule['subject_code'] . ' <br> ' . $schedule['teacher_name'] . ' <br> ' . $schedule['section_name'];
             if ($schedule['subject_type'] === 'lecture') {
                 $row[$day] = $subjectInfo . '<br> Room (' . $schedule['room_number'] . ')';
             } else if ($schedule['subject_type'] === 'lab') {
@@ -124,6 +125,8 @@ foreach ($timeSlots as $timeSlot) {
             }
         }
     }
+
+
 
     // Mark lunch break
     if ($timeSlot === $lunchBreakSlot) {
