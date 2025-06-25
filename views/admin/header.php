@@ -66,9 +66,9 @@
                     <li class="nav-item">
                         <a href="admin-home.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-home"></i></span><span class="pcoded-mtext">Dashboard</span></a>
                     </li>
-                    <li class="nav-item">
+                    <!--li class="nav-item">
                         <a href="admin-students.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-users"></i></span><span class="pcoded-mtext">Students</span></a>
-                    </li>
+                    </!--li-->
                     <li class="nav-item">
                         <a href="admin-teachers.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-user-check"></i></span><span class="pcoded-mtext">Teachers</span></a>
                     </li>

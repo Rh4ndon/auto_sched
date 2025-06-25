@@ -21,6 +21,7 @@ if (isset($_POST['submit'])) {
     $type = $_POST['type'];
     $capacity = $_POST['capacity'];
     $classroom_id = $_GET['id'];
+    $department = $_POST['department'];
 
     // Check if classroom name already exists
 
@@ -34,7 +35,8 @@ if (isset($_POST['submit'])) {
     $data = [
         'room_number' => $room_number,
         'type' => $type,
-        'capacity' => $capacity
+        'capacity' => $capacity,
+        'department' => $department
     ];
 
     if (editRecord('classrooms', $data, "id = $classroom_id")) {

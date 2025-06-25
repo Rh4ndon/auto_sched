@@ -11,11 +11,12 @@ if (isset($_POST['submit'])) {
     $semester = $_POST['semester'];
     $year_level = $_POST['year_level'];
     $academic_year = $_POST['academic_year'];
+    $department = $_POST['department'];
 
     $section_name = $department_code . '-' . $section_code;
 
     // Check if section name already exists
-    $existing_section = getRecord('sections', "section_name = '$section_name'");
+    $existing_section = getRecord('sections', "section_name = '$section_name' AND semester = '$semester' AND year_level = '$year_level' AND academic_year = '$academic_year'");
 
     if ($existing_section) {
         header('location:../views/admin/admin-sections.php?msg=Section name already exists');
@@ -26,7 +27,8 @@ if (isset($_POST['submit'])) {
         'section_name' => $section_name,
         'semester' => $semester,
         'year_level' => $year_level,
-        'academic_year' => $academic_year
+        'academic_year' => $academic_year,
+        'department' => $department
     ];
 
     if (insertRecord('sections', $data)) {

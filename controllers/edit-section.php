@@ -23,6 +23,7 @@ if (isset($_POST['submit'])) {
     $year_level = $_POST['year_level'];
     $academic_year = $_POST['academic_year'];
     $section_id = $_GET['id'];
+    $department = $_POST['department'];
 
     $section_name = $department_code . '-' . $section_code;
 
@@ -39,7 +40,8 @@ if (isset($_POST['submit'])) {
         'section_name' => $section_name,
         'semester' => $semester,
         'year_level' => $year_level,
-        'academic_year' => $academic_year
+        'academic_year' => $academic_year,
+        'department' => $department
     ];
 
     if (editRecord('sections', $data, "id = $section_id")) {

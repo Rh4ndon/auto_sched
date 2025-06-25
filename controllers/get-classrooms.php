@@ -6,17 +6,14 @@ $response = array();
 if (!empty($classrooms)) {
     $count = 1;
     foreach ($classrooms as $row) {
-        if ($row['semester'] == '1') {
-            $semester = '1st Semester';
-        } else {
-            $semester = '2nd Semester';
-        }
+
         $response[] = array(
             'count' => $count++,
             'room_number' => $row['room_number'],
             'capacity' => $row['capacity'],
             'type' => $row['type'],
-            'id' => $row['id']
+            'id' => $row['id'],
+            'department' => $row['department'] ? $row['department'] : 'N/A' // Handle empty department
         );
     }
 } else {

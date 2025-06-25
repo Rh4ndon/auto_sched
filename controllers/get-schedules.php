@@ -13,15 +13,31 @@ $sectionId = $_GET['section'];
 $academicYear = $_GET['academic_year'];
 
 // Fetch schedule data for the selected section, semester, and academic year
+// Fetch schedule data for the selected section, semester, and academic year
 $stmt = $conn->prepare("
-    SELECT schedules.*, subjects.subject_name, subjects.subject_code, users.name AS teacher_name, classrooms.room_number, subjects.subject_type
+    SELECT 
+        schedules.*, 
+        subjects.subject_name, 
+        subjects.subject_code, 
+        users.name AS teacher_name, 
+        CASE 
+            WHEN schedules.subject_type = 'online' THEN 'Online'
+            ELSE classrooms.room_number 
+        END AS room_number,
+        subjects.subject_type
     FROM schedules
     INNER JOIN subjects ON schedules.subject_id = subjects.id
     INNER JOIN users ON schedules.teacher_id = users.id
-    INNER JOIN classrooms ON schedules.classroom_id = classrooms.id
-    WHERE schedules.section_id = ? AND schedules.semester = ? AND schedules.academic_year = ? AND schedules.exam_type = ?
-    ORDER BY schedules.day, schedules.start_time
+    LEFT JOIN classrooms ON schedules.classroom_id = classrooms.id
+    WHERE schedules.section_id = ? 
+    AND schedules.semester = ? 
+    AND schedules.academic_year = ? 
+    AND schedules.exam_type = ?
+    ORDER BY 
+        FIELD(schedules.day, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'),
+        schedules.start_time
 ");
+$stmt->bind_param('isss', $sectionId, $semester, $academicYear, $type);
 $stmt->bind_param('isss', $sectionId, $semester, $academicYear, $type);
 $stmt->execute();
 $result = $stmt->get_result();
@@ -121,6 +137,8 @@ foreach ($timeSlots as $timeSlot) {
                 $row[$day] = $subjectInfo . '<br> Lab (' . $schedule['room_number'] . ')';
             } else if ($schedule['subject_type'] === 'pe') {
                 $row[$day] = $subjectInfo . '<br> Gym (' . $schedule['room_number'] . ')';
+            } else if ($schedule['subject_type'] === 'online') {
+                $row[$day] = $subjectInfo . '<br> Online';
             }
         }
     }
@@ -133,9 +151,9 @@ foreach ($timeSlots as $timeSlot) {
     }
 
     // Mark Friday as Online Class
-    if ($type === 'none') {
-        $row['friday'] = 'Online Class';
-    }
+    //if ($type === 'none') {
+    //  $row['friday'] = 'Online Class';
+    //}
 
 
     $response[] = $row;

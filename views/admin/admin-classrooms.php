@@ -37,18 +37,30 @@
                                         <form method="POST" action="../../controllers/add-classrooms.php">
                                             <div class="form-group">
                                                 <label for="room_number">Room Number</label>
-                                                <input type="number" name="room_number" class="form-control" id="room_number" placeholder="Enter Room Number e.g. 101">
+                                                <input type="number" name="room_number" class="form-control" id="room_number" placeholder="Enter Room Number e.g. 101" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="capacity">Capacity</label>
-                                                <input type="number" min="1" max="50" name="capacity" class="form-control" id="capacity" placeholder="Enter capacity e.g. 20">
+                                                <input type="number" min="1" max="50" name="capacity" class="form-control" id="capacity" placeholder="Enter capacity e.g. 20" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="type">Room Type</label>
-                                                <select name="type" class="form-control" id="type">
+                                                <select name="type" class="form-control" id="type" required>
                                                     <option value="Room">Room</option>
                                                     <option value="Laboratory">Laboratory</option>
                                                     <option value="Gym">Gym</option>
+
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="department">Department</label>
+                                                <select name="department" class="form-control" id="department" required>
+                                                    <option value="">-- Select Department --</option>
+                                                    <option value="BSIT">BSIT</option>
+                                                    <option value="BSED">BSED</option>
+                                                    <option value="BTVTED">BTVTED</option>
+                                                    <option value="DAT-BAT">DAT-BAT</option>
+                                                    <option value="GENERAL">GENERAL</option>
 
                                                 </select>
                                             </div>
@@ -77,7 +89,7 @@
                                                         <th>Room Number</th>
                                                         <th>Type</th>
                                                         <th>Capacity</th>
-
+                                                        <th>Department</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -120,6 +132,7 @@
                                                                     <td>${classroom.room_number}</td>
                                                                     <td>${classroom.type}</td>
                                                                     <td>${classroom.capacity}</td>
+                                                                    <td>${classroom.department}</td>
 
                                                                     <td>
                                                                         <button class="btn btn-sm btn-warning" onclick="editClassroom(${classroom.id})">Edit</button>
@@ -157,6 +170,7 @@
                 document.getElementById('room_number').value = classroom.room_number;
                 document.getElementById('capacity').value = classroom.capacity;
                 document.getElementById('type').value = classroom.type;
+                document.getElementById('department').value = classroom.department;
                 document.querySelector('form').action = `../../controllers/edit-classroom.php?id=${id}`;
             })
             .catch(error => console.error('Error fetching classroom:', error));

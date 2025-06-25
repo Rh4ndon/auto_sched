@@ -27,8 +27,14 @@
                         <!-- [ breadcrumb ] end -->
                         <!-- [ Main Content ] start -->
                         <div class="row">
+
+
+                        </div>
+
+                        <div class="row">
+
                             <!-- [ add-subject ] start -->
-                            <div class="col-sm-3">
+                            <div class="col-sm-2">
                                 <div class="card">
                                     <div class="card-header">
                                         <h5>Add/Edit Subject <i class="feather icon-plus-circle"></i> </h5>
@@ -41,15 +47,33 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="subject_name">Subject Name</label>
-                                                <input type="text" name="subject_name" class="form-control" id="subject_name" placeholder="Enter subject name">
+                                                <input type="text" name="subject_name" class="form-control" id="subject_name" placeholder="Enter subject name" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="units">Units</label>
-                                                <input type="number" name="units" min="1" max="3" class="form-control" id="units" placeholder="Enter subject units">
+                                                <input type="number" name="units" min="1" max="9" class="form-control" id="units" placeholder="Enter subject units" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="department">Department</label>
+                                                <select name="department" class="form-control" id="department" required>
+                                                    <option value="">-- Select Department --</option>
+                                                    <option value="BSIT">BSIT</option>
+                                                    <option value="BSED_Mathematics">BSED (Major in Mathematics)</option>
+                                                    <option value="BSED_Social_Studies">BSED (Major in Social Studies)</option>
+                                                    <option value="BTVTED_Garments">BTVTED (Garments, Fashion Design)</option>
+                                                    <option value="BTVTED_Electronics">BTVTED (Electronics Technology)</option>
+                                                    <option value="BTVTED_Electrical">BTVTED (Electrical Technology)</option>
+
+                                                    <option value="BAT_Crops_Production">BAT (Major in Crops Production Technology)</option>
+                                                    <option value="BSA_Agronomy">BSA (Major in Agronomy)</option>
+                                                    <option value="BTVTED_All">BSTVED (Available for all BSTVED)</option>
+                                                    <option value="BSED_All">BSED (Available for all BSED)</option>
+                                                    <option value="General_Education">General Education (Available for all departments)</option>
+                                                </select>
                                             </div>
                                             <div class="form-group">
                                                 <label for="semester">Semester</label>
-                                                <select name="semester" class="form-control" id="semester">
+                                                <select name="semester" class="form-control" id="semester" required>
                                                     <option value="1">1st</option>
                                                     <option value="2">2nd</option>
                                                     <option value="midyear">Midyear</option>
@@ -57,12 +81,12 @@
                                             </div>
                                             <div class="form-group">
                                                 <label for="year_level">Year Level</label>
-                                                <input type="number" min="1" max="4" name="year_level" class="form-control" id="year_level" placeholder="Enter year level">
+                                                <input type="number" min="1" max="4" name="year_level" class="form-control" id="year_level" placeholder="Enter year level" required>
                                             </div>
 
                                             <div class="form-group">
                                                 <label for="subject_type">Subject Type</label>
-                                                <select name="subject_type" id="subject_type" class="form-control" placeholder="Enter subject type">
+                                                <select name="subject_type" id="subject_type" class="form-control" placeholder="Enter subject type" required>
                                                     <option value="lecture">Lecture</option>
                                                     <option value="lab">Lab</option>
                                                     <option value="pe">PE</option>
@@ -70,8 +94,8 @@
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="minutes_per_week">Minutes Per Week (exclude Online Classes)</label>
-                                                <input type="number" name="minutes_per_week" class="form-control" id="minutes_per_week" placeholder="Enter minutes per week" title="Please exclude online classes">
+                                                <label for="minutes_per_week">Minutes Per Week (include Online Classes)</label>
+                                                <input type="number" name="minutes_per_week" class="form-control" id="minutes_per_week" placeholder="Enter minutes per week" title="Please exclude online classes" required>
                                             </div>
 
 
@@ -82,8 +106,9 @@
                                 </div>
                             </div>
                             <!-- [ add-subject ] end -->
+
                             <!-- [ subject-table ] start -->
-                            <div class="col-sm-9">
+                            <div class="col-sm-10">
                                 <div class="card">
                                     <div class="card-header d-flex justify-content-between align-items-center">
                                         <h5>Subjects <i class="feather icon-folder"></i></h5>
@@ -97,6 +122,7 @@
                                                         <th>#</th>
                                                         <th>Subject Code</th>
                                                         <th>Subject Name</th>
+                                                        <th>Department</th>
                                                         <th>Semester</th>
                                                         <th>Year Level</th>
                                                         <th>Subject Type</th>
@@ -141,7 +167,8 @@
                     row.innerHTML = `
                                                                     <td>${index + 1}</td>
                                                                     <td>${subject.subject_code}</td>
-                                                                    <td>${subject.subject_name}</td>
+                                                                    <td style="white-space: normal; word-break: break-word;">${subject.subject_name}</td>
+                                                                    <td style="white-space: normal; word-break: break-word;">${subject.department}</td>
                                                                     <td>${subject.semester}</td>
                                                                     <td>${subject.year_level}</td>
                                                                     <td>${subject.subject_type}</td>
@@ -182,6 +209,7 @@
             .then(subject => {
                 document.getElementById('subject_code').value = subject.subject_code;
                 document.getElementById('subject_name').value = subject.subject_name;
+                document.getElementById('department').value = subject.department;
                 document.getElementById('semester').value = subject.semester;
                 document.getElementById('year_level').value = subject.year_level;
                 document.getElementById('subject_type').value = subject.subject_type;

@@ -9,6 +9,7 @@ if (isset($_POST['submit'])) {
     $room_number = $_POST['room_number'];
     $capacity = $_POST['capacity'];
     $type = $_POST['type'];
+    $department = $_POST['department'];
 
     // Check if classroom name already exists
     $existing_classroom = getRecord('classrooms', "room_number = '$room_number'");
@@ -21,7 +22,8 @@ if (isset($_POST['submit'])) {
     $data = [
         'room_number' => $room_number,
         'capacity' => $capacity,
-        'type' => $type
+        'type' => $type,
+        'department' => $department
     ];
 
     if (insertRecord('classrooms', $data)) {

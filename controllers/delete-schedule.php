@@ -21,6 +21,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     // Construct the condition
     $condition = "semester = '$semester' AND exam_type = '$type' AND academic_year = '$academic_year'";
 
+    // Check if the record exists
+    $existingRecord = getRecord('schedules', $condition);
+
+    if (!$existingRecord) {
+        echo json_encode(['success' => false, 'message' => 'Schedule not found']);
+        exit;
+    }
+
     // Delete the record
     $result = deleteRecord('schedules', $condition);
 

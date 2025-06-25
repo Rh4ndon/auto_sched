@@ -27,7 +27,125 @@
         font-weight: bold;
         /* Bold PE classes */
     }
+
+    /* Loading Animation Styles */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .loading-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        min-width: 300px;
+    }
+
+    .loading-bar-container {
+        width: 100%;
+        height: 8px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 20px 0;
+        position: relative;
+    }
+
+    .loading-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        width: 0%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        position: relative;
+    }
+
+    .loading-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .loading-text {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .loading-percentage {
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .loading-spinner {
+        margin-bottom: 15px;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
 </style>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-container">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <div class="loading-percentage" id="loadingPercentage">0%</div>
+    </div>
+</div>
+
+
 <!-- [ Main Content ] start -->
 <div class="pcoded-main-container">
     <div class="pcoded-wrapper">
@@ -62,7 +180,7 @@
                                         <h5>Create Schedule <i class="feather icon-plus-circle"></i> </h5>
                                     </div>
                                     <div class="card-body">
-                                        <form method="POST" action="../../controllers/auto-scheduler.php">
+                                        <form method="POST" action="../../controllers/auto-scheduler.php" id="createScheduleForm">
                                             <div class="form-group">
                                                 <label for="name">Semester</label>
                                                 <select type="text" name="semester" class="form-control" id="semester" placeholder="Enter Semester" required>
@@ -200,6 +318,50 @@
                             </div>
 
                         </div>
+                        <?php
+                        session_start();
+                        if (isset($_SESSION['scheduling_report'])) {
+                            $report = $_SESSION['scheduling_report'];
+                            unset($_SESSION['scheduling_report']);
+                            echo "<div class='row mt-4'>";
+                            echo "<div class='col-md-12'>";
+
+                            echo "<div class='report-container'>";
+                            echo "<h3>Scheduling Report</h3>";
+                            echo "<p>Sections scheduled: " . $report['sections_scheduled'] . "</p>";
+
+                            if (!empty($report['subjects_without_teachers'])) {
+                                echo "<h4>Subjects Without Teachers:</h4>";
+                                echo "<ul>";
+                                foreach ($report['subjects_without_teachers'] as $subject) {
+                                    echo "<li>{$subject['subject_code']} - {$subject['subject_name']} (Section: {$subject['section_name']})</li>";
+                                }
+                                echo "</ul>";
+                            }
+
+
+                            if (!empty($report['subjects_not_scheduled'])) {
+                                echo "<h4>Detailed Scheduling Issues:</h4>";
+                                echo "<p>Subjects not scheduled: " . $report['subjects_not_scheduled_count'] . "</p>";
+                                echo "<table border='1'><tr><th>Subject</th><th>Section</th><th>Type</th><th>Minutes</th><th>Teacher ID</th><th>Reason</th></tr>";
+                                foreach ($report['subjects_not_scheduled'] as $subject) {
+                                    echo "<tr>";
+                                    echo "<td>{$subject['subject_code']} - {$subject['subject_name']}</td>";
+                                    echo "<td>{$subject['section_name']}</td>";
+                                    echo "<td>{$subject['subject_type']}</td>";
+                                    echo "<td>{$subject['minutes_per_week']}</td>";
+                                    echo "<td>{$subject['teacher_id']}</td>";
+                                    echo "<td>{$subject['reason']}</td>";
+                                    echo "</tr>";
+                                }
+                                echo "</table>";
+                            }
+
+                            echo "</div>";
+                            echo "</div>";
+                            echo "</div>";
+                        }
+                        ?>
 
 
                         <div class="row">
@@ -207,9 +369,9 @@
 
 
                             <div class="container mt-4 pt-5 bg-white p-4" id="scheduleContainer">
-                                <h3 class="text-center" id="scheduleTypeHeader">CLASS SCHEDULE</h3>
-                                <h5 class="text-center" id="scheduleHeader">Second Semester, SY: 2024 - 2025</h5>
-                                <h6 class="text-center" id="sectionHeader">BSIT-1A</h6>
+                                <h3 class="text-center" id="scheduleTypeHeader"></h3>
+                                <h5 class="text-center" id="scheduleHeader"></h5>
+                                <h6 class="text-center" id="sectionHeader"></h6>
 
                                 <table class="table table-bordered" id="scheduleTable">
                                     <thead class="table-light">
@@ -247,6 +409,52 @@
 
 
 <script>
+    // Loading Animation Functions
+    function showLoading(text = 'Processing...') {
+        document.getElementById('loadingText').textContent = text;
+        document.getElementById('loadingBar').style.width = '0%';
+        document.getElementById('loadingPercentage').textContent = '0%';
+        document.getElementById('loadingOverlay').style.display = 'flex';
+
+        // Animate the loading bar
+        animateLoadingBar();
+    }
+
+    function hideLoading() {
+        document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
+    function animateLoadingBar() {
+        const loadingBar = document.getElementById('loadingBar');
+        const loadingPercentage = document.getElementById('loadingPercentage');
+        let progress = 0;
+
+        const interval = setInterval(() => {
+            progress += Math.random() * 15 + 5; // Random increment between 5-20
+            if (progress >= 100) {
+                progress = 100;
+                clearInterval(interval);
+            }
+
+            loadingBar.style.width = progress + '%';
+            loadingPercentage.textContent = Math.round(progress) + '%';
+        }, 100);
+    }
+
+    function updateLoadingProgress(percentage, text) {
+        document.getElementById('loadingBar').style.width = percentage + '%';
+        document.getElementById('loadingPercentage').textContent = Math.round(percentage) + '%';
+        if (text) {
+            document.getElementById('loadingText').textContent = text;
+        }
+    }
+
+    // Create Schedule with Loading
+    document.getElementById('createScheduleForm').addEventListener('submit', function(event) {
+        showLoading('Creating Schedule...');
+        // Let the form submit normally, the loading will be hidden when page reloads
+    });
+
     // Delete Schedule
     document.getElementById('deleteButton').addEventListener('click', function() {
         const semester = document.getElementById('deleteSemester').value;
@@ -258,9 +466,17 @@
     });
 
     document.getElementById('confirmDeleteButton').addEventListener('click', function() {
+        showLoading('Deleting Schedule...');
+        $('#confirmDeleteModal').modal('hide');
+
         const semester = document.getElementById('deleteSemester').value;
         const type = document.getElementById('deleteType').value;
         const academicYear = document.getElementById('deleteAcademicYear').value;
+
+        // Simulate progress updates
+        setTimeout(() => updateLoadingProgress(30, 'Validating request...'), 300);
+        setTimeout(() => updateLoadingProgress(60, 'Removing schedule data...'), 600);
+        setTimeout(() => updateLoadingProgress(90, 'Finalizing deletion...'), 900);
 
         fetch('../../controllers/delete-schedule.php', {
                 method: 'DELETE',
@@ -274,54 +490,63 @@
                 })
             })
             .then(response => {
+                updateLoadingProgress(100, 'Processing response...');
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                return response.text(); // First, get the raw response as text
+                return response.text();
             })
             .then(text => {
-                console.log('Raw response:', text); // Log the raw response
-                return JSON.parse(text); // Now try to parse it as JSON
+                console.log('Raw response:', text);
+                return JSON.parse(text);
             })
             .then(data => {
+                hideLoading();
                 if (data.success) {
                     showAlert('Schedule deleted successfully', 'success');
                 } else {
                     showAlert('Error deleting schedule: ' + data.message, 'danger');
                 }
-                $('#confirmDeleteModal').modal('hide');
             })
             .catch(error => {
                 console.error('Error:', error);
+                hideLoading();
                 showAlert('Error deleting schedule: ' + error.message, 'danger');
-                $('#confirmDeleteModal').modal('hide');
             });
     });
-    // Get Schedule
+
+    // Get Schedule with Loading
     document.getElementById('getScheduleForm').addEventListener('submit', function(event) {
         event.preventDefault();
+
+        showLoading('Fetching Schedule...');
 
         const semester = document.getElementById('getSemester').value;
         const type = document.getElementById('getType').value;
         const section = document.getElementById('getEnrollSection').value;
         const academicYear = document.getElementById('getAcademicYear').value;
 
+        // Simulate progress updates
+        setTimeout(() => updateLoadingProgress(25, 'Connecting to database...'), 200);
+        setTimeout(() => updateLoadingProgress(50, 'Retrieving schedule data...'), 400);
+        setTimeout(() => updateLoadingProgress(75, 'Processing schedule...'), 600);
+
         fetch(`../../controllers/get-schedules.php?semester=${semester}&type=${type}&section=${section}&academic_year=${academicYear}`)
             .then(response => {
+                updateLoadingProgress(90, 'Loading schedule table...');
                 if (!response.ok) {
-                    // Parse the JSON error message from the response
                     return response.json().then(errorData => {
-                        // Throw an error with the message from the server
                         throw new Error(errorData.message || 'Network response was not ok');
                     });
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Fetched data:', data); // Debugging: Log the fetched data
+                updateLoadingProgress(95, 'Rendering schedule...');
+                console.log('Fetched data:', data);
 
                 const scheduleTable = document.getElementById('scheduleTable').getElementsByTagName('tbody')[0];
-                scheduleTable.innerHTML = ''; // Clear existing rows
+                scheduleTable.innerHTML = '';
 
                 // Populate the table
                 data.forEach(row => {
@@ -332,23 +557,50 @@
                     <td class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
                     <td class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
                     <td class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
-                    <td class="${row.friday === 'Online Class' ? 'online-class' : ''} ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
+                    <td class=" ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
+                    
                 `;
                     scheduleTable.appendChild(tr);
                 });
 
                 // Update headers
-                document.getElementById('scheduleHeader').innerText = `${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule, SY: ${academicYear}`;
+                let typeText = '';
+                if (type === 'none') typeText = 'Class';
+                else if (type === 'prelim') typeText = 'Preliminary Exam';
+                else if (type === 'midterm') typeText = 'Midterm Exam';
+                else if (type === 'final') typeText = 'Final Exam';
+
+                let typeShortText = '';
+                if (type === 'none') typeShortText = 'Class';
+                else if (type === 'prelim') typeShortText = 'Prelims';
+                else if (type === 'midterm') typeShortText = 'Midterms';
+                else if (type === 'final') typeShortText = 'Finals';
+
+                let semesterText = '';
+                if (semester === '1') semesterText = '1st Semester';
+                else if (semester === '2') semesterText = '2nd Semester';
+                else if (semester === 'midyear') semesterText = 'Midyear';
+
+                document.getElementById('scheduleHeader').innerText = `${typeText} Schedule, SY: ${academicYear}`;
                 document.getElementById('sectionHeader').innerText = window.sections[section];
-                document.getElementById('scheduleTypeHeader').innerText = `${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Prelims' : 'midterm' ? 'Midterms' : 'final' ? 'Finals' : ''} Schedule`;
+                document.getElementById('scheduleTypeHeader').innerText = `${semesterText} ${typeShortText} Schedule`;
+
+                updateLoadingProgress(100, 'Complete!');
+                setTimeout(() => {
+                    hideLoading();
+                }, 300);
             })
             .catch(error => {
                 console.error('Error fetching schedule:', error);
+                hideLoading();
                 showAlert('Error fetching schedule: ' + error, 'danger');
             });
     });
-    // Print Schedule
+
+    // Print Schedule with Loading
     document.getElementById('printButton').addEventListener('click', function() {
+        showLoading('Preparing PDF...');
+
         const div = document.getElementById('scheduleContainer');
 
         // Get the values from the form inputs
@@ -358,34 +610,68 @@
         const academicYear = document.getElementById('getAcademicYear').value;
 
         // Construct the filename
-        const fileName = `${window.sections[section]} ${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule SY;${academicYear}.pdf`;
+        let typeText = '';
+        if (type === 'none') typeText = 'Class';
+        else if (type === 'prelim') typeText = 'Preliminary Exam';
+        else if (type === 'midterm') typeText = 'Midterm Exam';
+        else if (type === 'final') typeText = 'Final Exam';
+
+        let semesterText = '';
+        if (semester === '1') semesterText = '1st Semester';
+        else if (semester === '2') semesterText = '2nd Semester';
+        else if (semester === 'midyear') semesterText = 'Midyear';
+
+        const fileName = `${window.sections[section]} ${semesterText} ${typeText} Schedule SY ${academicYear}.pdf`;
+
+        // Simulate progress updates
+        setTimeout(() => updateLoadingProgress(30, 'Capturing schedule...'), 200);
+        setTimeout(() => updateLoadingProgress(60, 'Converting to PDF...'), 500);
+        setTimeout(() => updateLoadingProgress(90, 'Finalizing document...'), 800);
 
         // Use html2canvas to capture the div as an image
         html2canvas(div).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png'); // Convert canvas to image data URL
+            updateLoadingProgress(95, 'Generating PDF...');
+            const imgData = canvas.toDataURL('image/png');
 
             // Create a new PDF document in landscape orientation
             const pdf = new jspdf.jsPDF({
-                orientation: 'landscape', // Set orientation to landscape
-                unit: 'mm', // Unit of measurement (millimeters)
-                format: 'a4', // Paper size (A4)
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4',
             });
 
             // Get the dimensions of the image and the PDF page
-            const imgWidth = pdf.internal.pageSize.getWidth(); // Full width of the PDF page
-            const imgHeight = (canvas.height * imgWidth) / canvas.width; // Calculate height to maintain aspect ratio
+            const imgWidth = pdf.internal.pageSize.getWidth();
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
             // Add the image to the PDF
             pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
 
+            updateLoadingProgress(100, 'Download ready!');
+
             // Save the PDF with the dynamically constructed filename
-            pdf.save(fileName);
+            setTimeout(() => {
+                pdf.save(fileName);
+                hideLoading();
+            }, 500);
+        }).catch(error => {
+            console.error('Error generating PDF:', error);
+            hideLoading();
+            showAlert('Error generating PDF: ' + error.message, 'danger');
         });
     });
-    // Fetch all sections
+
+    // Fetch all sections with Loading
     document.addEventListener('DOMContentLoaded', function() {
+        showLoading('Loading sections...');
+
+        setTimeout(() => updateLoadingProgress(50, 'Fetching section data...'), 200);
+
         fetch('../../controllers/get-sections.php')
-            .then(response => response.json())
+            .then(response => {
+                updateLoadingProgress(80, 'Processing sections...');
+                return response.json();
+            })
             .then(data => {
                 const enrollSection = document.getElementById('getEnrollSection');
                 data.forEach(section => {
@@ -399,8 +685,17 @@
                     acc[section.id] = section.section_name;
                     return acc;
                 }, {});
+
+                updateLoadingProgress(100, 'Ready!');
+                setTimeout(() => {
+                    hideLoading();
+                }, 300);
             })
-            .catch(error => console.error('Error fetching sections:', error));
+            .catch(error => {
+                console.error('Error fetching sections:', error);
+                hideLoading();
+                showAlert('Error loading sections: ' + error.message, 'danger');
+            });
     });
 
     function showAlert(message, type = 'success') {

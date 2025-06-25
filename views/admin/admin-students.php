@@ -180,9 +180,30 @@
                     return acc;
                 }, {});
 
-                console.log(subjects);
+                //console.log(subjects);
             })
             .catch(error => console.error('Error fetching subjects:', error));
+    });
+
+    // Fetch all sections
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('../../controllers/get-sections.php')
+            .then(response => response.json())
+            .then(data => {
+                const enrollSection = document.getElementById('enrollSection');
+                data.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = section.id;
+                    option.innerText = `${section.section_name} (${section.year_level}st Year)`;
+                    enrollSection.appendChild(option);
+                });
+                // Store sections for later use
+                window.sections = data.reduce((acc, section) => {
+                    acc[section.id] = section.section_name;
+                    return acc;
+                }, {});
+            })
+            .catch(error => console.error('Error fetching sections:', error));
     });
 
     // Fetch all students

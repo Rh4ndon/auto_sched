@@ -44,6 +44,23 @@
                                                 <input type="text" name="section_code" class="form-control" id="section_code" placeholder="Enter section code e.g. 1A">
                                             </div>
                                             <div class="form-group">
+                                                <label for="department">Department</label>
+                                                <select name="department" class="form-control" id="department" required>
+                                                    <option value="">-- Select Department --</option>
+                                                    <option value="BSIT">BSIT</option>
+                                                    <option value="BSED_All">BSED</option>
+                                                    <option value="BTVTED_All">BTVTED</option>
+                                                    <option value="BSED_Mathematics">BSED (Major in Mathematics)</option>
+                                                    <option value="BSED_Social_Studies">BSED (Major in Social Studies)</option>
+                                                    <option value="BTVTED_Garments">BTVTED (Garments, Fashion Design)</option>
+                                                    <option value="BTVTED_Electronics">BTVTED (Electronics Technology)</option>
+                                                    <option value="BTVTED_Electrical">BTVTED (Electrical Technology)</option>
+
+                                                    <option value="BAT_Crops_Production">BAT (Major in Crops Production Technology)</option>
+                                                    <option value="BSA_Agronomy">BSA (Major in Agronomy)</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
                                                 <label for="semester">Semester</label>
                                                 <select name="semester" class="form-control" id="semester">
                                                     <option value="1">1st</option>
@@ -82,9 +99,10 @@
                                                         <th>#</th>
 
                                                         <th>Section Name</th>
+                                                        <th>Department</th>
                                                         <th>Semester</th>
                                                         <th>Year Level</th>
-                                                        <th>Enrolled Students</th>
+
                                                         <th>Academic Year</th>
                                                         <th>Action</th>
                                                     </tr>
@@ -126,9 +144,10 @@
                                                                     <td>${index + 1}</td>
                                                 
                                                                     <td>${section.section_name}</td>
+                                                                    <td style="white-space: normal; word-break: break-word;">${section.department}</td>
                                                                     <td>${section.semester}</td>
                                                                     <td>${section.year_level}</td>
-                                                                    <td>${section.student_count}</td>
+                                                              
                                                                     <td>${section.academic_year}</td>
                                                                     <td>
                                                                         <button class="btn btn-sm btn-warning" onclick="editSection(${section.id})">Edit</button>
@@ -165,6 +184,7 @@
             .then(section => {
                 document.getElementById('department_code').value = section.section_name.split('-')[0];
                 document.getElementById('section_code').value = section.section_name.split('-')[1];
+                document.getElementById('department').value = section.department;
                 document.getElementById('semester').value = section.semester;
                 document.getElementById('year_level').value = section.year_level;
                 document.getElementById('academic_year').value = section.academic_year;

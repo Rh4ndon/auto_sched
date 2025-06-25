@@ -6,7 +6,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     $subject_id = $_GET['id'];
     $condition = "id = $subject_id";
     $response = array();
-    if (deleteRecord('subjects', $condition)) {
+    if (deleteRecord('enrollments', 'subject_id = ' . $subject_id)) {
+        deleteRecord('schedules', 'subject_id = ' . $subject_id);
+        deleteRecord('teacher_subjects', 'subject_id = ' . $subject_id);
+        deleteRecord('subjects', $condition);
+
         $response['success'] = true;
         $response['message'] = 'Subject deleted successfully';
     } else {

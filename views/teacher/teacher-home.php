@@ -284,15 +284,32 @@
                     <td class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
                     <td class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
                     <td class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
-                    <td class="${row.friday === 'Online Class' ? 'online-class' : ''} ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
+                     <td class="online-class  ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
                 `;
                     scheduleTable.appendChild(tr);
                 });
 
-                // Update headers
-                document.getElementById('scheduleHeader').innerText = `${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule, SY: ${academicYear}`;
+                // Update headers using readable variables
+                let typeText = '';
+                if (type === 'none') typeText = 'Class';
+                else if (type === 'prelim') typeText = 'Preliminary Exam';
+                else if (type === 'midterm') typeText = 'Midterm Exam';
+                else if (type === 'final') typeText = 'Final Exam';
 
-                document.getElementById('scheduleTypeHeader').innerText = `${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Prelims' : 'midterm' ? 'Midterms' : 'final' ? 'Finals' : ''} Schedule`;
+                let typeShortText = '';
+                if (type === 'none') typeShortText = 'Class';
+                else if (type === 'prelim') typeShortText = 'Prelims';
+                else if (type === 'midterm') typeShortText = 'Midterms';
+                else if (type === 'final') typeShortText = 'Finals';
+
+                let semesterText = '';
+                if (semester === '1') semesterText = '1st Semester';
+                else if (semester === '2') semesterText = '2nd Semester';
+                else if (semester === 'midyear') semesterText = 'Midyear';
+
+                document.getElementById('scheduleHeader').innerText = `${typeText} Schedule, SY: ${academicYear}`;
+                document.getElementById('scheduleTypeHeader').innerText = `${semesterText} ${typeShortText} Schedule`;
+
             })
             .catch(error => {
                 console.error('Error fetching schedule:', error);
@@ -309,8 +326,19 @@
         const academicYear = window.teachers[0].academic_year;
         const teacher = window.teachers[0].name;
 
-        // Construct the filename
-        const fileName = `${teacher} ${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule SY;${academicYear}.pdf`;
+        // Construct the filename using the same logic as in the headers
+        let typeText = '';
+        if (type === 'none') typeText = 'Class';
+        else if (type === 'prelim') typeText = 'Preliminary Exam';
+        else if (type === 'midterm') typeText = 'Midterm Exam';
+        else if (type === 'final') typeText = 'Final Exam';
+
+        let semesterText = '';
+        if (semester === '1') semesterText = '1st Semester';
+        else if (semester === '2') semesterText = '2nd Semester';
+        else if (semester === 'midyear') semesterText = 'Midyear';
+
+        const fileName = `${teacher} ${semesterText} ${typeText} Schedule SY ${academicYear}.pdf`;
 
         // Use html2canvas to capture the div as an image
         html2canvas(div).then((canvas) => {

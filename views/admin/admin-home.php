@@ -36,7 +36,7 @@
                                     </div>
                                     <div class="card-body">
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <!--div class="col-md-4">
                                                 <div class="card">
                                                     <div class="card-header">
                                                         <h5>Students</h5>
@@ -45,8 +45,8 @@
                                                         <p id="total_students" style="font-size: 1.5em;"><i class="feather icon-users"></i> Total Students: Loading...</p>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="col-md-4">
+                                            </!--div-->
+                                            <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-header">
                                                         <h5>Teachers</h5>
@@ -56,7 +56,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-header">
                                                         <h5>Subjects</h5>
@@ -66,9 +66,23 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-4">
+
+                                            <!--div class="col-md-4">
+                                                <div class="card">
+                                                    <div class="card-header">
+                                                        <h5>Enrollments</h5>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p id="total_enrollments" style="font-size: 1.5em;"><i class="feather icon-check-square"></i> Total Enrollments: Loading...</p>
+                                                    </div>
+                                                </div>
+                                            </!--div-->
+
+                                            <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-header">
                                                         <h5>Sections</h5>
@@ -78,17 +92,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="card">
-                                                    <div class="card-header">
-                                                        <h5>Enrollments</h5>
-                                                    </div>
-                                                    <div class="card-body">
-                                                        <p id="total_enrollments" style="font-size: 1.5em;"><i class="feather icon-check-square"></i> Total Enrollments: Loading...</p>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-6">
                                                 <div class="card">
                                                     <div class="card-header">
                                                         <h5>Classrooms</h5>
@@ -100,7 +104,7 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-12">
+                                            <!--div class="col-md-12">
                                                 <div class="card">
                                                     <div class="card-header">
                                                         <h5>Students per Section</h5>
@@ -111,7 +115,7 @@
                                                         </ul>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            </!--div-->
                                         </div>
 
                                         <script>
@@ -119,13 +123,14 @@
                                                 fetch('../../controllers/get-dashboard-data.php')
                                                     .then(response => response.json())
                                                     .then(data => {
-                                                        document.getElementById('total_students').innerHTML = '<i class="feather icon-users"></i> Total Students: ' + data.total_students;
+                                                        //document.getElementById('total_students').innerHTML = '<i class="feather icon-users"></i> Total Students: ' + data.total_students;
                                                         document.getElementById('total_teachers').innerHTML = '<i class="feather icon-user"></i> Total Teachers: ' + data.total_teachers;
                                                         document.getElementById('total_subjects').innerHTML = '<i class="feather icon-book"></i> Total Subjects: ' + data.total_subjects;
                                                         document.getElementById('total_sections').innerHTML = '<i class="feather icon-layers"></i> Total Sections: ' + data.total_sections;
-                                                        document.getElementById('total_enrollments').innerHTML = '<i class="feather icon-check-square"></i> Total Enrollments: ' + data.total_enrollments;
+                                                        //document.getElementById('total_enrollments').innerHTML = '<i class="feather icon-check-square"></i> Total Enrollments: ' + data.total_enrollments;
                                                         document.getElementById('total_classrooms').innerHTML = '<i class="feather icon-home"></i> Total Classrooms: ' + data.total_classrooms;
 
+                                                        /*
                                                         const studentsPerSectionList = document.getElementById('students_per_section');
                                                         studentsPerSectionList.innerHTML = '';
                                                         for (const [section, count] of Object.entries(data.total_students_per_section)) {
@@ -133,6 +138,7 @@
                                                             listItem.textContent = `${section}: ${count} students`;
                                                             studentsPerSectionList.appendChild(listItem);
                                                         }
+                                                            */
                                                     })
                                                     .catch(error => console.error('Error fetching dashboard data:', error));
                                             });
