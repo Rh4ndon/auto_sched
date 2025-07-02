@@ -1,6 +1,7 @@
 <?php @include 'header.php'; ?>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
 <!-- Custom styles for the schedule -->
 <style>
@@ -33,7 +34,173 @@
         max-width: 100% !important;
     }
 </style>
+<style>
+    /* Print-specific styles */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
 
+        #scheduleContainer,
+        #scheduleContainer * {
+            visibility: visible;
+        }
+
+        #scheduleContainer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dont-print {
+            display: none !important;
+        }
+
+        /* Print-specific table adjustments */
+        #scheduleTable {
+            font-size: 9px;
+            line-height: 1.1;
+        }
+
+        #scheduleTable th,
+        #scheduleTable td {
+            padding: 3px;
+        }
+
+        #scheduleTypeHeader {
+            font-size: 14px;
+            margin: 2px 0;
+        }
+
+        #scheduleHeader {
+            font-size: 12px;
+            margin: 2px 0;
+        }
+
+        #sectionHeader {
+            font-size: 10px;
+            margin: 2px 0 5px 0;
+        }
+    }
+
+    /* Loading Animation Styles */
+    .loading-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        display: none;
+        z-index: 9999;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .loading-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        text-align: center;
+        min-width: 300px;
+    }
+
+    .loading-bar-container {
+        width: 100%;
+        height: 8px;
+        background-color: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 20px 0;
+        position: relative;
+    }
+
+    .loading-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #007bff, #0056b3);
+        width: 0%;
+        border-radius: 4px;
+        transition: width 0.3s ease;
+        position: relative;
+    }
+
+    .loading-bar::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+        animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+        0% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            transform: translateX(100%);
+        }
+    }
+
+    .loading-text {
+        font-size: 16px;
+        color: #333;
+        margin-bottom: 10px;
+        font-weight: 500;
+    }
+
+    .loading-percentage {
+        font-size: 14px;
+        color: #666;
+        margin-top: 10px;
+        font-weight: bold;
+    }
+
+    .loading-spinner {
+        margin-bottom: 15px;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #f3f3f3;
+        border-top: 4px solid #007bff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-container">
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+        </div>
+        <div class="loading-text" id="loadingText">Processing...</div>
+        <div class="loading-bar-container">
+            <div class="loading-bar" id="loadingBar"></div>
+        </div>
+        <div class="loading-percentage" id="loadingPercentage">0%</div>
+    </div>
+</div>
 <!-- [ Main Content ] start -->
 <div class="pcoded-main-container">
     <div class="pcoded-wrapper container">
@@ -95,8 +262,11 @@
 
 
 
-                                            <button type="submit" name="submit" class="btn btn-primary">Search</button>
-                                            <button type="button" class="btn btn-primary" id="printButton">Print Schedule</button>
+                                            <div class="card-footer d-flex justify-content-end">
+                                                <button type="submit" name="submit" class="btn btn-primary">Search</button>
+                                                <button type="button" class="btn btn-secondary" id="printButton">Print Schedule</button>
+                                                <button type="button" class="btn btn-success" id="saveImageButton">Save as Image</button>
+                                            </div>
                                         </form>
                                     </div>
                                 </div>
@@ -165,6 +335,24 @@
                                         <!-- Schedule will be populated by JavaScript -->
                                     </tbody>
                                 </table>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <p class="mx-3 mb-0">
+                                        Prepared by:
+                                        <span contenteditable="true" id="preparedBy" style="border-bottom:1px solid #000; min-width:200px; display:inline-block; outline:none;">
+
+                                        </span>
+                                    </p>
+                                    <p class="mx-3 mb-0"> Reviewed by:
+                                        <span contenteditable="true" id="reviewedBy" style="border-bottom:1px solid #000; min-width:200px; display:inline-block; outline:none;">
+                                        </span>
+                                    </p>
+
+                                    <p class="mx-3 mb-0"> Approved by:
+                                        <span contenteditable="true" id="approvedBy" style="border-bottom:1px solid #000; min-width:200px; display:inline-block; outline:none;">
+
+                                        </span>
+                                    </p>
+                                </div>
                             </div>
 
                         </div>
@@ -279,12 +467,12 @@
                 data.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                    <td class="${row.time === '12:00 PM - 01:00 PM' ? 'lunch-break' : ''}">${row.time}</td>
-                    <td class="${row.monday === 'Lunch Break' ? 'lunch-break' : ''}">${row.monday}</td>
-                    <td class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
-                    <td class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
-                    <td class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
-                     <td class="online-class  ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
+                    <td contenteditable="true" class="${row.time === '12:00 PM - 01:00 PM' ? 'lunch-break' : ''}">${row.time}</td>
+                    <td contenteditable="true" class="${row.monday === 'Lunch Break' ? 'lunch-break' : ''}">${row.monday}</td>
+                    <td contenteditable="true" class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
+                    <td contenteditable="true" class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
+                    <td contenteditable="true" class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
+                      <td contenteditable="true" class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
                 `;
                     scheduleTable.appendChild(tr);
                 });
@@ -389,41 +577,6 @@
     });
 
 
-    // Print Schedule
-    document.getElementById('printButton').addEventListener('click', function() {
-        const div = document.getElementById('scheduleContainer');
-
-        // Get the values from the form inputs
-        const semester = document.getElementById('getSemester').value;
-        const type = document.getElementById('getType').value;
-        const section = window.students[0].section_id;
-        const academicYear = window.students[0].academic_year;
-
-        // Construct the filename
-        const fileName = `${window.students[0].section} ${semester === 1 ? '1st Semester' : 2 ? '2nd Semester' : 3 ? 'Midyear' : ''} ${type === 'none' ? 'Class' : 'prelim' ? 'Preliminary Exam' : 'midterm' ? 'Midterm Exam' : 'final' ? 'Final Exam' : ''} Schedule SY;${academicYear}.pdf`;
-
-        // Use html2canvas to capture the div as an image
-        html2canvas(div).then((canvas) => {
-            const imgData = canvas.toDataURL('image/png'); // Convert canvas to image data URL
-
-            // Create a new PDF document in landscape orientation
-            const pdf = new jspdf.jsPDF({
-                orientation: 'landscape', // Set orientation to landscape
-                unit: 'mm', // Unit of measurement (millimeters)
-                format: 'a4', // Paper size (A4)
-            });
-
-            // Get the dimensions of the image and the PDF page
-            const imgWidth = pdf.internal.pageSize.getWidth(); // Full width of the PDF page
-            const imgHeight = (canvas.height * imgWidth) / canvas.width; // Calculate height to maintain aspect ratio
-
-            // Add the image to the PDF
-            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
-
-            // Save the PDF with the dynamically constructed filename
-            pdf.save(fileName);
-        });
-    });
     // Fetch all sections
     document.addEventListener('DOMContentLoaded', function() {
         fetch('../../controllers/get-sections.php')
@@ -477,6 +630,348 @@
     if (window.location.search) {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
+</script>
+
+<script>
+    // Print Schedule with Loading
+    document.getElementById('printButton').addEventListener('click', function() {
+
+
+        // Get the values from the form inputs
+        const semester = document.getElementById('getSemester').value;
+        const type = document.getElementById('getType').value;
+        const academicYear = window.teachers[0].academic_year;
+        const teacherName = window.teachers[0].name;
+
+        // Check if schedule data exists
+        const scheduleTable = document.getElementById('scheduleTable').getElementsByTagName('tbody')[0];
+        if (!scheduleTable || scheduleTable.children.length === 0) {
+            hideLoading();
+            showAlert('Please search for a schedule first before printing.', 'warning');
+            return;
+        }
+
+        // Construct the filename
+        let typeText = '';
+        if (type === 'none') typeText = 'Class';
+        else if (type === 'prelim') typeText = 'Preliminary Exam';
+        else if (type === 'midterm') typeText = 'Midterm Exam';
+        else if (type === 'final') typeText = 'Final Exam';
+
+        let typeShortText = '';
+        if (type === 'none') typeShortText = 'Class';
+        else if (type === 'prelim') typeShortText = 'Prelims';
+        else if (type === 'midterm') typeShortText = 'Midterms';
+        else if (type === 'final') typeShortText = 'Finals';
+
+        let semesterText = '';
+        if (semester === '1') semesterText = '1st Semester';
+        else if (semester === '2') semesterText = '2nd Semester';
+        else if (semester === 'midyear') semesterText = 'Midyear';
+
+        const fileName = `${teacherName} ${semesterText} ${typeText} Schedule SY ${academicYear}.pdf`;
+
+        // Extract schedule data from the table
+        const scheduleData = [];
+        const rows = scheduleTable.getElementsByTagName('tr');
+
+        for (let i = 0; i < rows.length; i++) {
+            const cells = rows[i].getElementsByTagName('td');
+            if (cells.length >= 6) {
+                scheduleData.push({
+                    time: cells[0].textContent.trim(),
+                    monday: cells[1].textContent.trim(),
+                    tuesday: cells[2].textContent.trim(),
+                    wednesday: cells[3].textContent.trim(),
+                    thursday: cells[4].textContent.trim(),
+                    friday: cells[5].textContent.trim()
+                });
+            }
+        }
+
+
+
+        // Create PDF with custom layout
+        const pdf = new jspdf.jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4',
+        });
+
+        // PDF dimensions
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 10;
+        const contentWidth = pageWidth - (margin * 2);
+        const contentHeight = pageHeight - (margin * 2);
+
+        let currentY = margin;
+
+        // Helper function to add text with word wrapping
+        function addWrappedText(text, x, y, maxWidth, lineHeight = 4) {
+            if (!text || text === '') return y;
+
+            const lines = pdf.splitTextToSize(text, maxWidth);
+            for (let i = 0; i < lines.length; i++) {
+                if (currentY + lineHeight > pageHeight - margin) {
+                    pdf.addPage();
+                    currentY = margin;
+                }
+                pdf.text(lines[i], x, currentY);
+                currentY += lineHeight;
+            }
+            return currentY;
+        }
+
+        // Helper function to check if we need a new page
+        function checkNewPage(requiredHeight) {
+            if (currentY + requiredHeight > pageHeight - margin) {
+                pdf.addPage();
+                currentY = margin;
+            }
+        }
+
+        try {
+            // Title section
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            const title = `${semesterText} ${typeShortText} Schedule`;
+            const titleWidth = pdf.getTextWidth(title);
+            pdf.text(title, (pageWidth - titleWidth) / 2, currentY);
+            currentY += 8;
+
+            // Subtitle
+            pdf.setFontSize(12);
+            pdf.setFont('helvetica', 'normal');
+            const subtitle = `${typeText} Schedule, SY: ${academicYear}`;
+            const subtitleWidth = pdf.getTextWidth(subtitle);
+            pdf.text(subtitle, (pageWidth - subtitleWidth) / 2, currentY);
+            currentY += 6;
+
+            // Teacher info
+            pdf.setFontSize(10);
+            const teacherInfo = `Teacher: ${teacherName}`;
+            const teacherInfoWidth = pdf.getTextWidth(teacherInfo);
+            pdf.text(teacherInfo, (pageWidth - teacherInfoWidth) / 2, currentY);
+            currentY += 10;
+
+            // Table setup
+            const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+            const timeColWidth = 28; // Slightly wider for better time display
+            const dayColWidth = (contentWidth - timeColWidth) / 5;
+
+            // Table header
+            checkNewPage(15);
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+
+            // Draw header background
+            pdf.setFillColor(240, 240, 240);
+            pdf.rect(margin, currentY - 3, contentWidth, 8, 'F');
+
+            // Header borders
+            pdf.setDrawColor(0, 0, 0);
+            pdf.setLineWidth(0.1);
+
+            // Time column header
+            pdf.rect(margin, currentY - 3, timeColWidth, 8);
+            pdf.text('Time', margin + 2, currentY + 2);
+
+            // Day column headers
+            for (let i = 0; i < days.length; i++) {
+                const x = margin + timeColWidth + (i * dayColWidth);
+                pdf.rect(x, currentY - 3, dayColWidth, 8);
+                const dayText = days[i];
+                const dayTextWidth = pdf.getTextWidth(dayText);
+                pdf.text(dayText, x + (dayColWidth - dayTextWidth) / 2, currentY + 2);
+            }
+
+            currentY += 8;
+
+            // Table rows
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(8);
+
+            for (let rowIndex = 0; rowIndex < scheduleData.length; rowIndex++) {
+                const row = scheduleData[rowIndex];
+
+                // Calculate row height based on content with better spacing
+                let maxLines = 1;
+                const dayContents = [row.monday, row.tuesday, row.wednesday, row.thursday, row.friday];
+
+                for (let content of dayContents) {
+                    if (content && content !== '') {
+                        const lines = pdf.splitTextToSize(content, dayColWidth - 6); // More padding
+                        maxLines = Math.max(maxLines, lines.length);
+                    }
+                }
+
+                const rowHeight = Math.max(8, maxLines * 4 + 3); // Better minimum height and spacing
+
+                // Check if we need a new page
+                checkNewPage(rowHeight + 2);
+
+                const rowStartY = currentY;
+
+                // Determine if this is a lunch break row
+                const isLunchBreak = row.time.includes('12:00 PM - 01:00 PM') ||
+                    row.monday === 'Lunch Break' ||
+                    row.tuesday === 'Lunch Break' ||
+                    row.wednesday === 'Lunch Break' ||
+                    row.thursday === 'Lunch Break' ||
+                    row.friday === 'Lunch Break';
+
+                // Set background color for lunch break
+                if (isLunchBreak) {
+                    pdf.setFillColor(255, 204, 203); // Light red
+                    pdf.rect(margin, rowStartY, contentWidth, rowHeight, 'F');
+                }
+
+                // Draw row borders
+                pdf.setDrawColor(0, 0, 0);
+                pdf.setLineWidth(0.1);
+
+                // Time column with better formatting
+                pdf.rect(margin, rowStartY, timeColWidth, rowHeight);
+                const timeLines = pdf.splitTextToSize(row.time, timeColWidth - 6);
+                let textY = rowStartY + 4;
+                pdf.setFont('helvetica', 'bold'); // Make time bold
+                for (let line of timeLines) {
+                    pdf.text(line, margin + 3, textY);
+                    textY += 4;
+                }
+
+                // Day columns
+                for (let i = 0; i < days.length; i++) {
+                    const x = margin + timeColWidth + (i * dayColWidth);
+                    const content = dayContents[i];
+
+                    pdf.rect(x, rowStartY, dayColWidth, rowHeight);
+
+                    if (content && content !== '' && content !== 'Lunch Break') {
+                        const lines = pdf.splitTextToSize(content, dayColWidth - 6); // More padding
+                        textY = rowStartY + 4; // Better starting position
+
+                        for (let line of lines) {
+                            // Handle different content types with styling
+                            if (content.toLowerCase().includes('online')) {
+                                pdf.setFont('helvetica', 'bold');
+                            } else if (content.toLowerCase().includes('lab')) {
+                                pdf.setFont('helvetica', 'italic');
+                            } else if (content.toLowerCase().includes('pe') || content.toLowerCase().includes('physical education')) {
+                                pdf.setFont('helvetica', 'bold');
+                            } else {
+                                pdf.setFont('helvetica', 'normal');
+                            }
+
+                            pdf.text(line, x + 3, textY); // Better padding
+                            textY += 4; // Better line spacing
+                        }
+                    } else if (content === 'Lunch Break') {
+                        pdf.setFont('helvetica', 'bold'); // Make lunch break bold
+                        const lunchText = 'Lunch Break';
+                        const lunchWidth = pdf.getTextWidth(lunchText);
+                        pdf.text(lunchText, x + (dayColWidth - lunchWidth) / 2, rowStartY + rowHeight / 2 + 1);
+                    }
+                }
+
+                currentY += rowHeight;
+            }
+
+
+
+            // Add footer with generation timestamp
+            const now = new Date();
+            const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(`Generated on: ${timestamp}`, margin, pageHeight - 5);
+
+
+
+            // Save the PDF
+            setTimeout(() => {
+                pdf.save(fileName);
+                hideLoading();
+                showAlert('PDF generated successfully!', 'success');
+            }, 500);
+
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            hideLoading();
+            showAlert('Error generating PDF: ' + error.message, 'danger');
+        }
+    });
+
+
+    // Save as Image functionality
+    document.getElementById('saveImageButton').addEventListener('click', function() {
+
+
+        // Get the schedule container
+        const element = document.getElementById('scheduleContainer');
+
+        // Get the values from the form inputs for filename
+        const semester = document.getElementById('getSemester').value;
+        const type = document.getElementById('getType').value;
+        const academicYear = window.teachers[0].academic_year;
+        const teacherName = window.teachers[0].name;
+
+        // Construct the filename
+        let typeText = '';
+        if (type === 'none') typeText = 'Class';
+        else if (type === 'prelim') typeText = 'Preliminary Exam';
+        else if (type === 'midterm') typeText = 'Midterm Exam';
+        else if (type === 'final') typeText = 'Final Exam';
+
+        let semesterText = '';
+        if (semester === '1') semesterText = '1st Semester';
+        else if (semester === '2') semesterText = '2nd Semester';
+        else if (semester === 'midyear') semesterText = 'Midyear';
+
+        const fileName = `${teacherName} ${semesterText} ${typeText} Schedule SY ${academicYear}.png`;
+
+        // Options for html2canvas
+        const options = {
+            scale: 2, // Higher scale for better quality
+            logging: true,
+            useCORS: true,
+            allowTaint: true,
+            scrollX: 0,
+            scrollY: -window.scrollY,
+            windowWidth: document.documentElement.offsetWidth,
+            windowHeight: element.offsetHeight + 100
+        };
+
+
+        // Use html2canvas to capture the element
+        html2canvas(element, options).then(canvas => {
+
+
+            // Convert canvas to image
+            const image = canvas.toDataURL('image/png');
+
+            // Create a temporary link to download the image
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = fileName;
+
+            // Trigger the download
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+
+            setTimeout(() => {
+                hideLoading();
+                showAlert('Schedule saved as image successfully!', 'success');
+            }, 500);
+        }).catch(error => {
+            console.error('Error generating image:', error);
+            hideLoading();
+            showAlert('Error saving image: ' + error.message, 'danger');
+        });
+    });
 </script>
 
 

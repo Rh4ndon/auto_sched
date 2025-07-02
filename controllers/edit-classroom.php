@@ -18,6 +18,7 @@ if (isset($_GET['id'])) {
 
 if (isset($_POST['submit'])) {
     $room_number = $_POST['room_number'];
+    $room_name = $_POST['room_name'];
     $type = $_POST['type'];
     $capacity = $_POST['capacity'];
     $classroom_id = $_GET['id'];
@@ -34,6 +35,7 @@ if (isset($_POST['submit'])) {
 
     $data = [
         'room_number' => $room_number,
+        'room_name' => $room_name,
         'type' => $type,
         'capacity' => $capacity,
         'department' => $department

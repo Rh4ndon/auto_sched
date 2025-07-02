@@ -66,7 +66,7 @@
 
                                                     <option value="BAT_Crops_Production">BAT (Major in Crops Production Technology)</option>
                                                     <option value="BSA_Agronomy">BSA (Major in Agronomy)</option>
-                                                    <option value="BTVTED_All">BSTVED (Available for all BSTVED)</option>
+                                                    <option value="BTVTED_All">BTVTED (Available for all BSTVED)</option>
                                                     <option value="BSED_All">BSED (Available for all BSED)</option>
                                                     <option value="General_Education">General Education (Available for all departments)</option>
                                                 </select>

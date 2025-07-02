@@ -17,13 +17,19 @@ if (!empty($teachers)) {
             'teacher_subjects',
             'WHERE teacher_id = ' . $teacher['id'] . ' ORDER BY teacher_subjects.semester DESC'
         );
-
+        // Fetch all teacher_sections for the teacher, ordered by academic_year and semester
+        $teacher_sections = getAllRecords(
+            'teacher_sections',
+            'WHERE teacher_id = ' . $teacher['id'] . ' ORDER BY teacher_sections.semester DESC'
+        );
 
         // Debugging: Print the teacher_subjects for this teacher
         $debug = array();
         $debug['teacher_subjects'] = $teacher_subjects;
+        $debug['teacher_sections'] = $teacher_sections;
 
         $subjects = array();
+        $sections = array();
         $semester = 'Not Yet Assigned';
 
         if (!empty($teacher_subjects)) {
@@ -38,7 +44,6 @@ if (!empty($teachers)) {
                     $semester = 'Midyear';
                 }
 
-
                 $subject = getRecord('subjects', 'id = ' . $teacher_subject['subject_id']);
                 $subjects[] = array(
                     'subject_name' => $subject['subject_name'],
@@ -51,9 +56,28 @@ if (!empty($teachers)) {
                 'subject_code' => 'Not Yet Assigned'
             );
         }
+
+        if (!empty($teacher_sections)) {
+            // Collect all sections
+            foreach ($teacher_sections as $teacher_section) {
+                $section = getRecord('sections', 'id = ' . $teacher_section['section_id']);
+                $sections[] = array(
+                    'section_name' => $section['section_name'],
+                    'year_level' => $section['year_level'],
+                );
+            }
+        } else {
+            $sections[] = array(
+                'section_name' => 'Not Yet Assigned',
+                'year_level' => 'Not Yet Assigned'
+            );
+        }
+
         $debug = array(
             'teacher_subjects' => $teacher_subjects,
-            'raw_teacher_subjects' => json_encode($teacher_subjects) // Extra logging for debugging
+            'teacher_sections' => $teacher_sections,
+            'raw_teacher_subjects' => json_encode($teacher_subjects),
+            'raw_teacher_sections' => json_encode($teacher_sections)
         );
 
         $response[] = array(
@@ -63,6 +87,7 @@ if (!empty($teachers)) {
             'gender' => $teacher['gender'],
             'semester' => $semester,
             'subjects' => $subjects,
+            'sections' => $sections,
             'id' => $teacher['id'],
             'debug' => $debug
         );

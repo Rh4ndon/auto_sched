@@ -75,7 +75,7 @@
                                                         <th>Name</th>
                                                         <th>Email</th>
                                                         <th>Gender</th>
-
+                                                        <th>Section</th>
                                                         <th>Subject Code</th>
                                                         <th>Subject Name</th>
                                                         <th>Semester</th>
@@ -145,6 +145,48 @@
     </div>
 </div>
 
+<!-- Section Modal -->
+<div class="modal fade" id="sectionModal" tabindex="-1" role="dialog" aria-labelledby="sectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form id="sectionForm">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sectionModalLabel">Assign Subject</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <input type="hidden" id="sectionTeacherId">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="enrollSections">Subjects (Press CTRL then click to select multiple subjects)</label>
+                        <select id="enrollSections" class="form-control" multiple required>
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sectionSemester">Semester</label>
+                        <select id="sectionSemester" class="form-control" required>
+                            <option value="1">1st Semester</option>
+                            <option value="2">2nd Semester</option>
+                            <option value="midyear">Midyear</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="sectionAcademicYear">AcademicYear</label>
+                        <input type="text" name="academic_year" class="form-control" id="academic_year" placeholder="Enter Academic Year (e.g. 2024-2025)" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 
 <script>
     // Fetch all subjects
@@ -158,6 +200,21 @@
                     option.value = subject.id;
                     option.innerText = `${subject.subject_code} (${subject.subject_name})`;
                     enrollSubjects.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching subjects:', error));
+    });;
+    // Fetch all sections
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('../../controllers/get-sections.php')
+            .then(response => response.json())
+            .then(data => {
+                const enrollSections = document.getElementById('enrollSections');
+                data.forEach(section => {
+                    const option = document.createElement('option');
+                    option.value = section.id;
+                    option.innerText = `${section.section_name}`;
+                    enrollSections.appendChild(option);
                 });
             })
             .catch(error => console.error('Error fetching subjects:', error));
@@ -176,6 +233,9 @@
                                                                     <td>${teacher.name}</td>
                                                                     <td>${teacher.email}</td>
                                                                     <td>${teacher.gender}</td>
+                                                                    <td>
+                                                                        ${teacher.sections.map(section => section.section_name).join(',<br>')}
+                                                                    </td>
                                                                    
                                                                     <td>
                                                                         ${teacher.subjects.map(subject => subject.subject_code).join(',<br>')}
@@ -187,8 +247,12 @@
                                                                     
 
                                                                     <td>
-                                                                        <button class="btn btn-sm btn-primary mb-2" onclick="enrollTeacher(${teacher.id})" ${teacher.semester === 'Not Yet Assigned' ? '' : 'style="display:none;"'}>Add Subject</button>
-                                                                        <button class="btn btn-sm btn-warning mb-2" onclick="clearSubjects(${teacher.id})" ${teacher.semester === 'Not Yet Assigned' ? 'style="display:none;"' : ''}><i class="feather icon-trash-2"></i>Clear Subjects</button><br>
+                                                                        <button class="btn btn-sm btn-primary mb-2 add-subject-btn" onclick="enrollTeacher(${teacher.id})" ${teacher.semester === 'Not Yet Assigned' ? '' : 'style="display:none;"'}>Add Subject</button>
+                                                                        <button class="btn btn-sm btn-warning mb-2 clear-subjects-btn" onclick="clearSubjects(${teacher.id})" ${teacher.semester === 'Not Yet Assigned' ? 'style="display:none;"' : ''}><i class="feather icon-trash-2"></i>Clear Subjects</button><br>
+                                                                        
+                                                                        <button class="btn btn-sm btn-primary mb-2 add-section-btn" onclick="sectionTeacher(${teacher.id})" ${teacher.sections[0].section_name === 'Not Yet Assigned' ? '' : 'style="display:none;"'}>Add Section</button>
+                                                                        <button class="btn btn-sm btn-warning mb-2 clear-sections-btn" onclick="clearSections(${teacher.id})" ${teacher.sections[0].section_name === 'Not Yet Assigned' ? 'style="display:none;"' : ''}><i class="feather icon-trash-2"></i>Clear Sections</button><br>
+                                                                    
                                                                         <button class="btn btn-sm btn-info" onclick="editTeacher(${teacher.id})"><i class="feather icon-edit"></i></button>
                                                                         <button class="btn btn-sm btn-danger" onclick="deleteTeacher(${teacher.id})"><i class="feather icon-trash-2"></i></button>
                                                                     </td>
@@ -213,13 +277,36 @@
                         row.querySelector('td:nth-child(5)').innerText = 'Not Yet Enrolled';
                         row.querySelector('td:nth-child(6)').innerText = 'Not Yet Enrolled';
                         row.querySelector('td:nth-child(7)').innerText = 'Not Yet Assigned';
-                        row.querySelector('button:nth-child(1)').style.display = '';
-                        row.querySelector('button:nth-child(2)').style.display = 'none';
+                        // Update subject buttons only
+                        row.querySelector('.add-subject-btn').style.display = '';
+                        row.querySelector('.clear-subjects-btn').style.display = 'none';
                     } else {
                         showAlert('Failed to clear teacher subjects', 'danger');
                     }
                 })
                 .catch(error => console.error('Error clearing teacher subjects:', error));
+        }
+    }
+
+    function clearSections(id) {
+        if (confirm('Are you sure you want to clear this teacher sections?')) {
+            fetch(`../../controllers/clear-sections.php?id=${id}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showAlert('Teacher sections cleared successfully', 'success');
+                        const row = document.querySelector(`#teacherTableBody tr[data-id="${id}"]`);
+                        row.querySelector('td:nth-child(5)').innerText = 'Not Yet Assigned';
+                        // Update section buttons only
+                        row.querySelector('.add-section-btn').style.display = '';
+                        row.querySelector('.clear-sections-btn').style.display = 'none';
+                    } else {
+                        showAlert('Failed to clear teacher sections', 'danger');
+                    }
+                })
+                .catch(error => console.error('Error clearing teacher sections:', error));
         }
     }
 
@@ -265,6 +352,17 @@
         $('#enrollModal').modal('show');
     }
 
+    function sectionTeacher(id) {
+        fetch(`../../controllers/get-teacher.php?id=${id}`)
+            .then(response => response.json())
+            .then(teacher => {
+                document.getElementById('sectionModalLabel').innerText = `Assign Section: ${teacher.name}`;
+            })
+            .catch(error => console.error('Error fetching teacher:', error));
+        document.getElementById('sectionTeacherId').value = id;
+        $('#sectionModal').modal('show');
+    }
+
     document.getElementById('enrollForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const id = document.getElementById('enrollTeacherId').value;
@@ -290,8 +388,8 @@
                     showAlert('Teacher enrolled successfully', 'success');
                     const row = document.querySelector(`#teacherTableBody tr[data-id="${id}"]`);
 
-                    row.querySelector('td:nth-child(5)').innerText = data.subjects.map(subject => subject.subject_code).join(',\n');
-                    row.querySelector('td:nth-child(6)').innerText = data.subjects.map(subject => subject.subject_name).join(',\n');
+                    row.querySelector('td:nth-child(6)').innerText = data.subjects.map(subject => subject.subject_code).join(',\n');
+                    row.querySelector('td:nth-child(7)').innerText = data.subjects.map(subject => subject.subject_name).join(',\n');
                     let semesterText = '';
                     switch (semester) {
                         case '1':
@@ -308,8 +406,9 @@
                     }
                     row.querySelector('td:nth-child(7)').innerText = semesterText;
 
-                    row.querySelector('button:nth-child(1)').style.display = 'none';
-                    row.querySelector('button:nth-child(2)').style.display = '';
+                    // Update subject buttons only
+                    row.querySelector('.add-subject-btn').style.display = 'none';
+                    row.querySelector('.clear-subjects-btn').style.display = '';
                     $('#enrollModal').modal('hide');
                 } else {
                     showAlert('Failed to enroll teacher', 'danger');
@@ -317,6 +416,61 @@
                 }
             })
             .catch(error => console.error('Error enrolling teacher:', error));
+    });
+
+
+    document.getElementById('sectionForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const id = document.getElementById('sectionTeacherId').value;
+        const semester = document.getElementById('sectionSemester').value;
+        const academic_year = document.getElementById('academic_year').value;
+        const sections = Array.from(document.getElementById('enrollSections').selectedOptions).map(option => option.value);
+
+        fetch(`../../controllers/assign-section-teacher.php`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id,
+                    semester,
+                    academic_year,
+                    sections
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert('Teacher assigned successfully', 'success');
+                    const row = document.querySelector(`#teacherTableBody tr[data-id="${id}"]`);
+
+
+                    row.querySelector('td:nth-child(5)').innerText = data.sections.map(section => section.section_name).join(',\n');
+                    let semesterText = '';
+                    switch (semester) {
+                        case '1':
+                            semesterText = '1st Semester';
+                            break;
+                        case '2':
+                            semesterText = '2nd Semester';
+                            break;
+                        case 'midyear':
+                            semesterText = 'Midyear';
+                            break;
+                        default:
+                            semesterText = semester + ' Semester';
+                    }
+
+                    // Update section buttons only
+                    row.querySelector('.add-section-btn').style.display = 'none';
+                    row.querySelector('.clear-sections-btn').style.display = '';
+                    $('#sectionModal').modal('hide');
+                } else {
+                    showAlert('Failed to assign teacher', 'danger');
+                    console.error(data.error);
+                }
+            })
+            .catch(error => console.error('Error assigning teacher:', error));
     });
 
 

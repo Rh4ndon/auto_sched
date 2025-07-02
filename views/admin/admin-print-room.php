@@ -4,6 +4,17 @@
 
 <!-- Custom styles for the schedule -->
 <style>
+    #scheduleTable td {
+        word-wrap: break-word;
+        word-break: break-word;
+        white-space: normal;
+        max-width: 200px;
+        /* Adjust as needed */
+        vertical-align: top;
+        padding: 8px;
+        line-height: 1.4;
+    }
+
     .lunch-break {
         background-color: #ffcccb;
         /* Light red for lunch break */
@@ -129,9 +140,7 @@
             transform: rotate(360deg);
         }
     }
-</style>
 
-<style>
     /* Print-specific styles */
     @media print {
         body * {
@@ -184,6 +193,10 @@
     }
 </style>
 
+
+<!-- Update your print button script -->
+
+
 <!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loading-container">
@@ -225,56 +238,22 @@
                         </div>
                         <!-- [ breadcrumb ] end -->
                         <!-- [ Main Content ] start -->
-                        <div class="row">
-
-                            <div class="col-sm-4 ml-5">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5>Create Schedule <i class="feather icon-plus-circle"></i> </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="POST" action="../../controllers/auto-scheduler.php" id="createScheduleForm">
-                                            <div class="form-group">
-                                                <label for="name">Semester</label>
-                                                <select type="text" name="semester" class="form-control" id="semester" placeholder="Enter Semester" required>
-                                                    <option value="1">1st</option>
-                                                    <option value="2">2nd</option>
-                                                    <option value="midyear">Midyear</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="name">Schedule Type</label>
-                                                <select type="text" name="type" class="form-control" id="type" placeholder="Enter Schedule Type" required>
-                                                    <option value="none">Class Schedule</option>
-                                                    <option value="prelim">Preliminary Exam</option>
-                                                    <option value="midterm">Midterm Exam</option>
-                                                    <option value="final">Final Exam</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="name">Academic Year</label>
-                                                <input type="text" name="academic_year" class="form-control" id="academicYear" placeholder="Enter Academic Year (e.g. 2024-2025)" required>
-                                            </div>
-
-                                            <button type="submit" name="submit" class="btn btn-primary">Create</button>
-                                        </form>
-
-                                    </div>
-                                </div>
-                            </div>
-
-
+                        <div class="row justify-content-center">
                             <div class="col-sm-3">
                                 <div class="card">
                                     <div class="card-header">
-                                        <h5>Get Schedule <i class="feather icon-navigation"></i> </h5>
+                                        <h5>Get Classroom Schedule <i class="feather icon-navigation"></i> </h5>
                                     </div>
                                     <div class="card-body">
                                         <form method="POST" id="getScheduleForm">
                                             <div class="form-group">
-                                                <label for="name">Semester</label>
+                                                <label for="classroom">Classroom</label>
+                                                <select id="getClassroom" class="form-control" required>
+                                                    <!-- Options will be populated by JavaScript -->
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="semester">Semester</label>
                                                 <select type="text" name="semester" class="form-control" id="getSemester" placeholder="Enter Semester" required>
                                                     <option value="1">1st</option>
                                                     <option value="2">2nd</option>
@@ -283,7 +262,7 @@
                                             </div>
 
                                             <div class="form-group">
-                                                <label for="name">Schedule Type</label>
+                                                <label for="type">Schedule Type</label>
                                                 <select type="text" name="type" class="form-control" id="getType" placeholder="Enter Schedule Type" required>
                                                     <option value="none">Class Schedule</option>
                                                     <option value="prelim">Preliminary Exam</option>
@@ -291,135 +270,24 @@
                                                     <option value="final">Final Exam</option>
                                                 </select>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="enrollSection">Section</label>
-                                                <select id="getEnrollSection" class="form-control" required>
-                                                    <!-- Options will be populated by JavaScript -->
-                                                </select>
-                                            </div>
 
                                             <div class="form-group">
-                                                <label for="name">Academic Year</label>
+                                                <label for="academic_year">Academic Year</label>
                                                 <input type="text" name="academic_year" class="form-control" id="getAcademicYear" placeholder="Enter Academic Year (e.g. 2024-2025)" required>
                                             </div>
-
                                             <div class="card-footer d-flex justify-content-end">
                                                 <button type="submit" name="submit" class="btn btn-primary">Search</button>
                                                 <button type="button" class="btn btn-secondary" id="printButton">Print Schedule</button>
                                                 <button type="button" class="btn btn-success" id="saveImageButton">Save as Image</button>
                                             </div>
+
+
                                         </form>
                                     </div>
                                 </div>
                             </div>
-
-                            <div class="col-sm-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5>Delete Schedule <i class="feather icon-trash"></i> </h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <form method="POST" id="deleteScheduleForm">
-                                            <div class="form-group">
-                                                <label for="name">Semester</label>
-                                                <select type="text" name="semester" class="form-control" id="deleteSemester" placeholder="Enter Semester" required>
-                                                    <option value="1">1st</option>
-                                                    <option value="2">2nd</option>
-                                                    <option value="midyear">Midyear</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="name">Schedule Type</label>
-                                                <select type="text" name="type" class="form-control" id="deleteType" placeholder="Enter Schedule Type" required>
-                                                    <option value="none">Class Schedule</option>
-                                                    <option value="prelim">Preliminary Exam</option>
-                                                    <option value="midterm">Midterm Exam</option>
-                                                    <option value="final">Final Exam</option>
-                                                </select>
-                                            </div>
-
-                                            <div class="form-group">
-                                                <label for="name">Academic Year</label>
-                                                <input type="text" name="academic_year" class="form-control" id="deleteAcademicYear" placeholder="Enter Academic Year (e.g. 2024-2025)" required>
-                                            </div>
-
-                                            <button type="button" class="btn btn-danger" id="deleteButton">Delete <i class="feather icon-trash-2"></i></button>
-                                        </form>
-
-                                        <!-- Modal -->
-                                        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
-                                            <div class="modal-dialog" role="document">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <h5 class="modal-title" id="confirmDeleteModalLabel">Confirm Delete</h5>
-                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                            <span aria-hidden="true">&times;</span>
-                                                        </button>
-                                                    </div>
-                                                    <div class="modal-body">
-                                                        Are you sure you want to delete <br><span id="deleteDetails"></span>?
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                        <button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
-                        <?php
-                        session_start();
-                        if (isset($_SESSION['scheduling_report'])) {
-                            $report = $_SESSION['scheduling_report'];
-                            unset($_SESSION['scheduling_report']);
-                            echo "<div class='row mt-4'>";
-                            echo "<div class='col-md-12'>";
 
-                            echo "<div class='report-container'>";
-                            echo "<h3>Scheduling Report</h3>";
-                            echo "<p>Sections scheduled: " . $report['sections_scheduled'] . "</p>";
-
-                            if (!empty($report['subjects_without_teachers'])) {
-                                echo "<h4>Subjects Without Teachers:</h4>";
-                                echo "<ul>";
-                                foreach ($report['subjects_without_teachers'] as $subject) {
-                                    echo "<li>{$subject['subject_code']} - {$subject['subject_name']} (Section: {$subject['section_name']})</li>";
-                                }
-                                echo "</ul>";
-                            }
-
-
-                            if (!empty($report['subjects_not_scheduled'])) {
-                                echo "<h4>Detailed Scheduling Issues:</h4>";
-                                echo "<p>Subjects not scheduled: " . $report['subjects_not_scheduled_count'] . "</p>";
-                                echo "<table border='1'><tr><th>Subject</th><th>Section</th><th>Type</th><th>Minutes</th><th>Teacher ID</th><th>Scheduled slots</th><th>Required Slots</th><th>Reason</th></tr>";
-                                foreach ($report['subjects_not_scheduled'] as $subject) {
-                                    echo "<tr>";
-                                    echo "<td>{$subject['subject_code']} - {$subject['subject_name']}</td>";
-                                    echo "<td>{$subject['section_name']}</td>";
-                                    echo "<td>{$subject['subject_type']}</td>";
-                                    echo "<td>{$subject['minutes_per_week']}</td>";
-                                    echo "<td>{$subject['teacher_id']}</td>";
-                                    echo "<td>{$subject['num_slots_scheduled']}</td>";
-                                    echo "<td>{$subject['required_slots']}</td>";
-                                    echo "<td>{$subject['reason']}</td>";
-                                    echo "</tr>";
-                                }
-                                echo "</table>";
-                            }
-
-                            echo "</div>";
-                            echo "</div>";
-                            echo "</div>";
-                        }
-                        ?>
 
 
                         <div class="row">
@@ -430,11 +298,6 @@
                                 <h3 class="text-center" id="scheduleTypeHeader"></h3>
                                 <h5 class="text-center" id="scheduleHeader"></h5>
                                 <h6 class="text-center" id="sectionHeader"></h6>
-                                <p class="text-center" id="notes" style="display: none;">
-                                    Exam Date:
-                                    <input type="date" placeholder="Date" id="notesDate" oninput="this.nextElementSibling.textContent = this.value ? new Date(this.value).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';">
-                                    <span style="margin-left:10px; font-weight:bold;"></span>
-                                </p>
 
                                 <table class="table table-bordered" id="scheduleTable">
                                     <thead class="table-light">
@@ -469,12 +332,15 @@
                                         </span>
                                     </p>
                                 </div>
+
                             </div>
+
 
                         </div>
 
 
                         <!-- [ schedule table ] end -->
+
 
 
 
@@ -530,71 +396,10 @@
         }
     }
 
-    // Create Schedule with Loading
-    document.getElementById('createScheduleForm').addEventListener('submit', function(event) {
-        showLoading('Creating Schedule...');
-        // Let the form submit normally, the loading will be hidden when page reloads
-    });
 
-    // Delete Schedule
-    document.getElementById('deleteButton').addEventListener('click', function() {
-        const semester = document.getElementById('deleteSemester').value;
-        const type = document.getElementById('deleteType').value;
-        const academicYear = document.getElementById('deleteAcademicYear').value;
-        const details = `${type === 'none' ? 'Class' : type === 'prelim' ? 'Preliminary Exam' : type === 'midterm' ? 'Midterm Exam' : type === 'final' ? 'Final Exam' : ''} Schedule for ${semester === '1' ? '1st Semester' : semester === '2' ? '2nd Semester' : semester === 'midyear' ? 'Midyear' : ''}, Academic Year: ${academicYear}`;
-        document.getElementById('deleteDetails').innerText = details;
-        $('#confirmDeleteModal').modal('show');
-    });
+    // Store the last fetched schedule data globally
+    let lastFetchedScheduleData = null;
 
-    document.getElementById('confirmDeleteButton').addEventListener('click', function() {
-        showLoading('Deleting Schedule...');
-        $('#confirmDeleteModal').modal('hide');
-
-        const semester = document.getElementById('deleteSemester').value;
-        const type = document.getElementById('deleteType').value;
-        const academicYear = document.getElementById('deleteAcademicYear').value;
-
-        // Simulate progress updates
-        setTimeout(() => updateLoadingProgress(30, 'Validating request...'), 300);
-        setTimeout(() => updateLoadingProgress(60, 'Removing schedule data...'), 600);
-        setTimeout(() => updateLoadingProgress(90, 'Finalizing deletion...'), 900);
-
-        fetch('../../controllers/delete-schedule.php', {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    semester: semester,
-                    type: type,
-                    academic_year: academicYear
-                })
-            })
-            .then(response => {
-                updateLoadingProgress(100, 'Processing response...');
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(text => {
-                console.log('Raw response:', text);
-                return JSON.parse(text);
-            })
-            .then(data => {
-                hideLoading();
-                if (data.success) {
-                    showAlert('Schedule deleted successfully', 'success');
-                } else {
-                    showAlert('Error deleting schedule: ' + data.message, 'danger');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                hideLoading();
-                showAlert('Error deleting schedule: ' + error.message, 'danger');
-            });
-    });
 
     // Get Schedule with Loading
     document.getElementById('getScheduleForm').addEventListener('submit', function(event) {
@@ -604,15 +409,16 @@
 
         const semester = document.getElementById('getSemester').value;
         const type = document.getElementById('getType').value;
-        const section = document.getElementById('getEnrollSection').value;
+        const classroom = document.getElementById('getClassroom').value;
         const academicYear = document.getElementById('getAcademicYear').value;
+        const classroomText = document.getElementById('getClassroom').options[document.getElementById('getClassroom').selectedIndex].text;
 
         // Simulate progress updates
         setTimeout(() => updateLoadingProgress(25, 'Connecting to database...'), 200);
         setTimeout(() => updateLoadingProgress(50, 'Retrieving schedule data...'), 400);
         setTimeout(() => updateLoadingProgress(75, 'Processing schedule...'), 600);
 
-        fetch(`../../controllers/get-schedules.php?semester=${semester}&type=${type}&section=${section}&academic_year=${academicYear}`)
+        fetch(`../../controllers/get-room-schedules.php?semester=${semester}&type=${type}&classroom=${classroom}&academic_year=${academicYear}`)
             .then(response => {
                 updateLoadingProgress(90, 'Loading schedule table...');
                 if (!response.ok) {
@@ -626,6 +432,10 @@
                 updateLoadingProgress(95, 'Rendering schedule...');
                 console.log('Fetched data:', data);
 
+                // Store the fetched data for printing
+                lastFetchedScheduleData = data;
+
+
                 const scheduleTable = document.getElementById('scheduleTable').getElementsByTagName('tbody')[0];
                 scheduleTable.innerHTML = '';
 
@@ -634,12 +444,11 @@
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
                     <td contenteditable="true" class="${row.time === '12:00 PM - 01:00 PM' ? 'lunch-break' : ''}">${row.time}</td>
-                    <td contenteditable="true" class="${row.monday === 'Lunch Break' ? 'lunch-break' : ''}">${row.monday}</td>
-                    <td contenteditable="true" class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
-                    <td contenteditable="true" class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
-                    <td contenteditable="true" class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday}</td>
-                    <td contenteditable="true" class=" ${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday}</td>
-                    
+                    <td contenteditable="true" class="${row.monday === 'Lunch Break' ? 'lunch-break' : ''}">${row.monday || ''}</td>
+                    <td contenteditable="true" class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday || ''}</td>
+                    <td contenteditable="true" class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday || ''}</td>
+                    <td contenteditable="true" class="${row.thursday === 'Lunch Break' ? 'lunch-break' : ''}">${row.thursday || ''}</td>
+                    <td contenteditable="true" class="${row.friday === 'Lunch Break' ? 'lunch-break' : ''}">${row.friday || ''}</td>
                 `;
                     scheduleTable.appendChild(tr);
                 });
@@ -663,15 +472,8 @@
                 else if (semester === 'midyear') semesterText = 'Midyear';
 
                 document.getElementById('scheduleHeader').innerText = `${typeText} Schedule, SY: ${academicYear}`;
-                document.getElementById('sectionHeader').innerText = window.sections[section];
+                document.getElementById('sectionHeader').innerText = `Room: ${classroomText}`;
                 document.getElementById('scheduleTypeHeader').innerText = `${semesterText} ${typeShortText} Schedule`;
-
-                // Show the schedule table
-
-                if (type !== 'none') {
-                    document.getElementById('notes').style.display = 'block';
-                }
-
 
                 updateLoadingProgress(100, 'Complete!');
                 setTimeout(() => {
@@ -681,33 +483,35 @@
             .catch(error => {
                 console.error('Error fetching schedule:', error);
                 hideLoading();
-                showAlert('Error fetching schedule: ' + error, 'danger');
+                showAlert('Error fetching schedule: ' + error.message, 'danger');
             });
     });
 
 
-    // Fetch all sections with Loading
+    // Fetch all classrooms with Loading
     document.addEventListener('DOMContentLoaded', function() {
-        showLoading('Loading sections...');
+        showLoading('Loading classrooms...');
 
-        setTimeout(() => updateLoadingProgress(50, 'Fetching section data...'), 200);
+        setTimeout(() => updateLoadingProgress(50, 'Fetching classroom data...'), 200);
 
-        fetch('../../controllers/get-sections.php')
+        fetch('../../controllers/get-classrooms.php')
             .then(response => {
-                updateLoadingProgress(80, 'Processing sections...');
+                updateLoadingProgress(80, 'Processing classrooms...');
                 return response.json();
             })
             .then(data => {
-                const enrollSection = document.getElementById('getEnrollSection');
-                data.forEach(section => {
+                const enrollClassroom = document.getElementById('getClassroom');
+                data.forEach(classroom => {
                     const option = document.createElement('option');
-                    option.value = section.id;
-                    option.innerText = `${section.section_name} (${section.year_level}st Year)`;
-                    enrollSection.appendChild(option);
+                    option.value = classroom.id;
+                    option.innerText = classroom.room_name ?
+                        `${classroom.department}, ${classroom.room_name} - ${classroom.type} (${classroom.room_number})` :
+                        `${classroom.department}, ${classroom.type} (${classroom.room_number})`;
+                    enrollClassroom.appendChild(option);
                 });
-                // Store sections for later use
-                window.sections = data.reduce((acc, section) => {
-                    acc[section.id] = section.section_name;
+                // Store classrooms for later use
+                window.classrooms = data.reduce((acc, classroom) => {
+                    acc[classroom.id] = classroom.type;
                     return acc;
                 }, {});
 
@@ -758,25 +562,50 @@
 </script>
 
 <script>
+    // Update the print button event listener to capture edited content
     document.getElementById('printButton').addEventListener('click', function() {
         showLoading('Preparing PDF...');
 
         // Get the values from the form inputs
         const semester = document.getElementById('getSemester').value;
         const type = document.getElementById('getType').value;
-        const section = document.getElementById('getEnrollSection').value;
+        const classroom = document.getElementById('getClassroom').value;
+        const classroomText = document.getElementById('getClassroom').options[document.getElementById('getClassroom').selectedIndex].text;
         const academicYear = document.getElementById('getAcademicYear').value;
-        const sectionText = window.sections[section];
 
         const preparedBy = document.getElementById('preparedBy').innerText;
         const reviewedBy = document.getElementById('reviewedBy').innerText;
         const approvedBy = document.getElementById('approvedBy').innerText;
 
-        // Check if schedule data exists
-        const scheduleTable = document.getElementById('scheduleTable').getElementsByTagName('tbody')[0];
-        if (!scheduleTable || scheduleTable.children.length === 0) {
+        // Check if we have a schedule table
+        const scheduleTable = document.getElementById('scheduleTable');
+        if (!scheduleTable || scheduleTable.rows.length < 2) {
             hideLoading();
             showAlert('Please search for a schedule first before printing.', 'warning');
+            return;
+        }
+
+        // Create a new data structure from the current table content
+        const currentScheduleData = [];
+        const rows = scheduleTable.rows;
+
+        // Skip header row (index 0)
+        for (let i = 1; i < rows.length; i++) {
+            const cells = rows[i].cells;
+            currentScheduleData.push({
+                time: cells[0].innerText.trim(),
+                monday: cells[1].innerText.trim(),
+                tuesday: cells[2].innerText.trim(),
+                wednesday: cells[3].innerText.trim(),
+                thursday: cells[4].innerText.trim(),
+                friday: cells[5].innerText.trim()
+            });
+        }
+
+        // Check if we have data
+        if (currentScheduleData.length === 0) {
+            hideLoading();
+            showAlert('No schedule data found to print.', 'warning');
             return;
         }
 
@@ -787,48 +616,12 @@
         else if (type === 'midterm') typeText = 'Midterm Exam';
         else if (type === 'final') typeText = 'Final Exam';
 
-        let typeShortText = '';
-        if (type === 'none') typeShortText = 'Class';
-        else if (type === 'prelim') typeShortText = 'Prelims';
-        else if (type === 'midterm') typeShortText = 'Midterms';
-        else if (type === 'final') typeShortText = 'Finals';
-
         let semesterText = '';
         if (semester === '1') semesterText = '1st Semester';
         else if (semester === '2') semesterText = '2nd Semester';
         else if (semester === 'midyear') semesterText = 'Midyear';
 
-        const fileName = `${sectionText} ${semesterText} ${typeText} Schedule SY ${academicYear}.pdf`;
-
-        // Extract schedule data from the table
-        const scheduleData = [];
-        const rows = scheduleTable.getElementsByTagName('tr');
-
-        for (let i = 0; i < rows.length; i++) {
-            const cells = rows[i].getElementsByTagName('td');
-            if (cells.length >= 6) {
-                scheduleData.push({
-                    time: cells[0].textContent.trim(),
-                    monday: cells[1].textContent.trim(),
-                    tuesday: cells[2].textContent.trim(),
-                    wednesday: cells[3].textContent.trim(),
-                    thursday: cells[4].textContent.trim(),
-                    friday: cells[5].textContent.trim()
-                });
-            }
-        }
-
-        // Check if exam date is needed and provided
-        if (type !== 'none') {
-            const examDateInput = document.getElementById('notesDate');
-            if (!examDateInput.value) {
-                hideLoading();
-                showAlert('Please enter the Exam Date before printing.', 'warning');
-                examDateInput.style.display = '';
-                examDateInput.focus();
-                return;
-            }
-        }
+        const fileName = `${classroomText} ${semesterText} ${typeText} Schedule SY ${academicYear}.pdf`;
 
         // Simulate progress updates
         setTimeout(() => updateLoadingProgress(30, 'Processing schedule data...'), 200);
@@ -836,12 +629,12 @@
 
         // Create PDF with custom layout
         const pdf = new jspdf.jsPDF({
-            orientation: 'portrait',
+            orientation: 'landscape',
             unit: 'mm',
             format: 'a4',
         });
 
-        // PDF dimensions
+        // PDF dimensions and setup
         const pageWidth = pdf.internal.pageSize.getWidth();
         const pageHeight = pdf.internal.pageSize.getHeight();
         const margin = 10;
@@ -850,23 +643,6 @@
 
         let currentY = margin;
 
-        // Helper function to add text with word wrapping
-        function addWrappedText(text, x, y, maxWidth, lineHeight = 4) {
-            if (!text || text === '') return y;
-
-            const lines = pdf.splitTextToSize(text, maxWidth);
-            for (let i = 0; i < lines.length; i++) {
-                if (currentY + lineHeight > pageHeight - margin) {
-                    pdf.addPage();
-                    currentY = margin;
-                }
-                pdf.text(lines[i], x, currentY);
-                currentY += lineHeight;
-            }
-            return currentY;
-        }
-
-        // Helper function to check if we need a new page
         function checkNewPage(requiredHeight) {
             if (currentY + requiredHeight > pageHeight - margin) {
                 pdf.addPage();
@@ -874,10 +650,33 @@
             }
         }
 
+        // Function to process cell content with HTML tags
+        function processCellContent(content) {
+            if (!content) return '';
+
+            // Replace <br> with newlines
+            let processed = content.replace(/<br\s*\/?>/gi, '\n');
+
+            // Replace <hr> with dashed line
+            processed = processed.replace(/<hr[^>]*>/gi, '\n--------------------------------\n');
+
+            // Remove any remaining HTML tags
+            processed = processed.replace(/<[^>]*>/g, '');
+
+            return processed.trim();
+        }
+
         try {
             // Title section
             pdf.setFontSize(16);
             pdf.setFont('helvetica', 'bold');
+
+            let typeShortText = '';
+            if (type === 'none') typeShortText = 'Class';
+            else if (type === 'prelim') typeShortText = 'Prelims';
+            else if (type === 'midterm') typeShortText = 'Midterms';
+            else if (type === 'final') typeShortText = 'Finals';
+
             const title = `${semesterText} ${typeShortText} Schedule`;
             const titleWidth = pdf.getTextWidth(title);
             pdf.text(title, (pageWidth - titleWidth) / 2, currentY);
@@ -891,36 +690,16 @@
             pdf.text(subtitle, (pageWidth - subtitleWidth) / 2, currentY);
             currentY += 6;
 
-            // Section info
+            // Room info
             pdf.setFontSize(10);
-            const sectionInfo = `Section: ${sectionText}`;
-            const sectionInfoWidth = pdf.getTextWidth(sectionInfo);
-            pdf.text(sectionInfo, (pageWidth - sectionInfoWidth) / 2, currentY);
-            currentY += 6;
-
-            // Exam date if applicable
-            if (type !== 'none') {
-                const examDateInput = document.getElementById('notesDate');
-                const examDate = examDateInput.value ? new Date(examDateInput.value).toLocaleDateString('en-US', {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric'
-                }) : '';
-
-                if (examDate) {
-                    pdf.setFontSize(10);
-                    const examDateText = `Exam Date: ${examDate}`;
-                    const examDateWidth = pdf.getTextWidth(examDateText);
-                    pdf.text(examDateText, (pageWidth - examDateWidth) / 2, currentY);
-                    currentY += 6;
-                }
-            }
-
-            currentY += 4;
+            const roomInfo = `Room: ${classroomText}`;
+            const roomInfoWidth = pdf.getTextWidth(roomInfo);
+            pdf.text(roomInfo, (pageWidth - roomInfoWidth) / 2, currentY);
+            currentY += 10;
 
             // Table setup
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
-            const timeColWidth = 28; // Slightly wider for better time display
+            const timeColWidth = 28;
             const dayColWidth = (contentWidth - timeColWidth) / 5;
 
             // Table header
@@ -951,25 +730,30 @@
 
             currentY += 8;
 
-            // Table rows
+            // Table rows using the current table data
             pdf.setFont('helvetica', 'normal');
             pdf.setFontSize(8);
 
-            for (let rowIndex = 0; rowIndex < scheduleData.length; rowIndex++) {
-                const row = scheduleData[rowIndex];
+            for (let rowIndex = 0; rowIndex < currentScheduleData.length; rowIndex++) {
+                const row = currentScheduleData[rowIndex];
+                const dayContents = [
+                    processCellContent(row.monday),
+                    processCellContent(row.tuesday),
+                    processCellContent(row.wednesday),
+                    processCellContent(row.thursday),
+                    processCellContent(row.friday)
+                ];
 
-                // Calculate row height based on content with better spacing
+                // Calculate row height based on content
                 let maxLines = 1;
-                const dayContents = [row.monday, row.tuesday, row.wednesday, row.thursday, row.friday];
-
                 for (let content of dayContents) {
-                    if (content && content !== '') {
-                        const lines = pdf.splitTextToSize(content, dayColWidth - 6); // More padding
+                    if (content) {
+                        const lines = content.split('\n');
                         maxLines = Math.max(maxLines, lines.length);
                     }
                 }
 
-                const rowHeight = Math.max(8, maxLines * 4 + 3); // Better minimum height and spacing
+                const rowHeight = Math.max(8, maxLines * 4 + 3);
 
                 // Check if we need a new page
                 checkNewPage(rowHeight + 2);
@@ -986,7 +770,7 @@
 
                 // Set background color for lunch break
                 if (isLunchBreak) {
-                    pdf.setFillColor(255, 204, 203); // Light red
+                    pdf.setFillColor(255, 204, 203);
                     pdf.rect(margin, rowStartY, contentWidth, rowHeight, 'F');
                 }
 
@@ -994,11 +778,11 @@
                 pdf.setDrawColor(0, 0, 0);
                 pdf.setLineWidth(0.1);
 
-                // Time column with better formatting
+                // Time column
                 pdf.rect(margin, rowStartY, timeColWidth, rowHeight);
                 const timeLines = pdf.splitTextToSize(row.time, timeColWidth - 6);
                 let textY = rowStartY + 4;
-                pdf.setFont('helvetica', 'bold'); // Make time bold
+                pdf.setFont('helvetica', 'bold');
                 for (let line of timeLines) {
                     pdf.text(line, margin + 3, textY);
                     textY += 4;
@@ -1011,27 +795,40 @@
 
                     pdf.rect(x, rowStartY, dayColWidth, rowHeight);
 
-                    if (content && content !== '' && content !== 'Lunch Break') {
-                        const lines = pdf.splitTextToSize(content, dayColWidth - 6); // More padding
-                        textY = rowStartY + 4; // Better starting position
+                    if (content && content !== 'Lunch Break') {
+                        const lines = content.split('\n');
+                        textY = rowStartY + 4;
 
                         for (let line of lines) {
-                            // Handle different content types with styling
-                            if (content.toLowerCase().includes('online')) {
+                            // Skip empty lines (except for dashed lines)
+                            if (line.trim() === '' && !line.includes('-')) continue;
+
+                            // Apply appropriate styling based on content
+                            if (line.toLowerCase().includes('online')) {
                                 pdf.setFont('helvetica', 'bold');
-                            } else if (content.toLowerCase().includes('lab')) {
+                            } else if (line.toLowerCase().includes('lab')) {
                                 pdf.setFont('helvetica', 'italic');
-                            } else if (content.toLowerCase().includes('pe') || content.toLowerCase().includes('physical education')) {
+                            } else if (line.toLowerCase().includes('pe') || line.toLowerCase().includes('physical education')) {
                                 pdf.setFont('helvetica', 'bold');
                             } else {
                                 pdf.setFont('helvetica', 'normal');
                             }
 
-                            pdf.text(line, x + 3, textY); // Better padding
-                            textY += 4; // Better line spacing
+                            // Handle dashed lines (from <hr>)
+                            if (line.includes('--------------------------------')) {
+                                pdf.setDrawColor(150, 150, 150);
+                                pdf.setLineWidth(0.2);
+                                pdf.line(x + 3, textY - 1, x + dayColWidth - 3, textY - 1);
+                                pdf.setDrawColor(0, 0, 0);
+                                pdf.setLineWidth(0.1);
+                            } else {
+                                pdf.text(line, x + 3, textY);
+                            }
+
+                            textY += 4;
                         }
                     } else if (content === 'Lunch Break') {
-                        pdf.setFont('helvetica', 'bold'); // Make lunch break bold
+                        pdf.setFont('helvetica', 'bold');
                         const lunchText = 'Lunch Break';
                         const lunchWidth = pdf.getTextWidth(lunchText);
                         pdf.text(lunchText, x + (dayColWidth - lunchWidth) / 2, rowStartY + rowHeight / 2 + 1);
@@ -1062,7 +859,6 @@
             pdf.text(`Prepared by: ${preparedBy}`, margin, sigStartY);
             pdf.text(`Reviewed by: ${reviewedBy}`, margin + 60, sigStartY);
             pdf.text(`Approved by: ${approvedBy}`, margin + 120, sigStartY);
-
 
             // Draw signature lines
             pdf.line(margin, sigStartY + 3, margin + 40, sigStartY + 3);
@@ -1098,8 +894,8 @@
         // Get the values from the form inputs for filename
         const semester = document.getElementById('getSemester').value;
         const type = document.getElementById('getType').value;
-        const sectionId = document.getElementById('getEnrollSection').value;
-        const sectionText = window.sections[sectionId] || 'Section';
+        const classroom = document.getElementById('getClassroom').value;
+        const classroomText = document.getElementById('getClassroom').options[document.getElementById('getClassroom').selectedIndex].text;
         const academicYear = document.getElementById('getAcademicYear').value;
 
         // Construct the filename
@@ -1114,9 +910,9 @@
         else if (semester === '2') semesterText = '2nd Semester';
         else if (semester === 'midyear') semesterText = 'Midyear';
 
-        const fileName = `${sectionText} ${semesterText} ${typeText} Schedule SY ${academicYear}.png`;
+        const fileName = `${classroomText} ${semesterText} ${typeText} Schedule SY ${academicYear}.png`;
 
-        // Options for html2canvas - improved configuration
+        // Options for html2canvas
         const options = {
             scale: 2, // Higher scale for better quality
             logging: true,
@@ -1125,12 +921,7 @@
             scrollX: 0,
             scrollY: -window.scrollY,
             windowWidth: document.documentElement.offsetWidth,
-            windowHeight: element.offsetHeight + 100,
-            backgroundColor: '#FFFFFF', // Ensure white background
-            ignoreElements: function(element) {
-                // Ignore elements that might cause issues
-                return element.id === 'notesDate';
-            }
+            windowHeight: element.offsetHeight + 100
         };
 
         // Simulate progress updates

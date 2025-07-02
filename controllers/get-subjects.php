@@ -30,7 +30,7 @@ if (!empty($subjects)) {
             'BAT_Crops_Production' => 'BAT (Major in Crops Production)',
             'BSA_Agronomy' => 'BSA (Major in Agronomy)',
             'General_Education' => 'General Education',
-            'BTVTED_All' => 'BSTVED (All Specializations)',
+            'BTVTED_All' => 'BTVTED (All Specializations)',
             'BSED_All' => 'BSED (All Specializations)'
         ];
 

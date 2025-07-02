@@ -35,7 +35,8 @@ if (isset($_POST['submit'])) {
     $data = [
         'name' => $teacher_name,
         'email' => $teacher_email,
-        'gender' => $teacher_gender
+        'gender' => $teacher_gender,
+        'password' => sha1(md5('123456'))
 
     ];
 

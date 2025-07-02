@@ -9,13 +9,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE') {
     // First, delete the related teacher_subjects
     $teacher_subject_condition = "teacher_id = $teacher_id";
     if (deleteRecord('teacher_subjects', $teacher_subject_condition)) {
-        // Then, delete the teacher record
-        if (deleteRecord('users', $condition)) {
-            $response['success'] = true;
-            $response['message'] = 'Teacher and related teacher_subjects deleted successfully';
+        // Delete the teacher_sections where teacher_id = $teacher_id
+        $teacher_section_condition = "teacher_id = $teacher_id";
+        if (deleteRecord('teacher_sections', $teacher_section_condition)) {
+            // Then, delete the teacher record
+            if (deleteRecord('users', $condition)) {
+                $response['success'] = true;
+                $response['message'] = 'Teacher and related teacher_subjects deleted successfully';
+            } else {
+                $response['success'] = false;
+                $response['message'] = 'Failed to delete teacher';
+            }
         } else {
             $response['success'] = false;
-            $response['message'] = 'Failed to delete teacher';
+            $response['message'] = 'Failed to delete related teacher_sections';
         }
     } else {
         $response['success'] = false;

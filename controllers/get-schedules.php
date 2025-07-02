@@ -20,10 +20,9 @@ $stmt = $conn->prepare("
         subjects.subject_name, 
         subjects.subject_code, 
         users.name AS teacher_name, 
-        CASE 
-            WHEN schedules.subject_type = 'online' THEN 'Online'
-            ELSE classrooms.room_number 
-        END AS room_number,
+        classrooms.room_number  as room_number,
+        classrooms.room_name as classroom_name,
+        classrooms.department as classroom_department,
         subjects.subject_type
     FROM schedules
     INNER JOIN subjects ON schedules.subject_id = subjects.id
@@ -132,11 +131,11 @@ foreach ($timeSlots as $timeSlot) {
             $day = strtolower($schedule['day']);
             $subjectInfo = $schedule['subject_code'] . ' <br> ' . $schedule['teacher_name'];
             if ($schedule['subject_type'] === 'lecture') {
-                $row[$day] = $subjectInfo . '<br> Room (' . $schedule['room_number'] . ')';
+                $row[$day] = $subjectInfo . '<br>' . $schedule['classroom_department']  . ',' . $schedule['classroom_name']  . ' Room (' . $schedule['room_number'] . ')';
             } else if ($schedule['subject_type'] === 'lab') {
-                $row[$day] = $subjectInfo . '<br> Lab (' . $schedule['room_number'] . ')';
+                $row[$day] = $subjectInfo . '<br>' . $schedule['classroom_department'] . ',' . $schedule['classroom_name']  .  ' Lab (' . $schedule['room_number'] . ')';
             } else if ($schedule['subject_type'] === 'pe') {
-                $row[$day] = $subjectInfo . '<br> Gym (' . $schedule['room_number'] . ')';
+                $row[$day] = $subjectInfo . '<br>' . $schedule['classroom_department'] . ',' . $schedule['classroom_name']  .  ' Gym (' . $schedule['room_number'] . ')';
             } else if ($schedule['subject_type'] === 'online') {
                 $row[$day] = $subjectInfo . '<br> Online';
             }

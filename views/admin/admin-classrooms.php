@@ -40,6 +40,10 @@
                                                 <input type="number" name="room_number" class="form-control" id="room_number" placeholder="Enter Room Number e.g. 101" required>
                                             </div>
                                             <div class="form-group">
+                                                <label for="room_name">Room Name</label>
+                                                <input type="text" name="room_name" class="form-control" id="room_name" placeholder="Enter Room Name">
+                                            </div>
+                                            <div class="form-group">
                                                 <label for="capacity">Capacity</label>
                                                 <input type="number" min="1" max="50" name="capacity" class="form-control" id="capacity" placeholder="Enter capacity e.g. 20" required>
                                             </div>
@@ -87,6 +91,7 @@
                                                         <th>#</th>
 
                                                         <th>Room Number</th>
+                                                        <th>Room Name</th>
                                                         <th>Type</th>
                                                         <th>Capacity</th>
                                                         <th>Department</th>
@@ -130,6 +135,7 @@
                                                                     <td>${index + 1}</td>
                                                 
                                                                     <td>${classroom.room_number}</td>
+                                                                    <td>${classroom.room_name ? classroom.room_name : ''}</td>
                                                                     <td>${classroom.type}</td>
                                                                     <td>${classroom.capacity}</td>
                                                                     <td>${classroom.department}</td>
@@ -168,6 +174,7 @@
             .then(response => response.json())
             .then(classroom => {
                 document.getElementById('room_number').value = classroom.room_number;
+                document.getElementById('room_name').value = classroom.room_name;
                 document.getElementById('capacity').value = classroom.capacity;
                 document.getElementById('type').value = classroom.type;
                 document.getElementById('department').value = classroom.department;

@@ -7,6 +7,7 @@ error_reporting(E_ALL);
 
 if (isset($_POST['submit'])) {
     $room_number = $_POST['room_number'];
+    $room_name = $_POST['room_name'];
     $capacity = $_POST['capacity'];
     $type = $_POST['type'];
     $department = $_POST['department'];
@@ -21,6 +22,7 @@ if (isset($_POST['submit'])) {
 
     $data = [
         'room_number' => $room_number,
+        'room_name' => $room_name,
         'capacity' => $capacity,
         'type' => $type,
         'department' => $department

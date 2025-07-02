@@ -10,6 +10,7 @@ if (!empty($classrooms)) {
         $response[] = array(
             'count' => $count++,
             'room_number' => $row['room_number'],
+            'room_name' => $row['room_name'],
             'capacity' => $row['capacity'],
             'type' => $row['type'],
             'id' => $row['id'],

@@ -140,7 +140,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
     // ========== PE CLASSES (Gym) ==========
     if ($subjectType === 'pe') {
         $stmt = $conn->prepare("
-            SELECT id, room_number, capacity, type
+            SELECT id, room_number, capacity 
             FROM classrooms 
             WHERE type = 'Gym' 
             AND department = 'GENERAL'
@@ -154,7 +154,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
         // BSED departments - use regular rooms (no labs)
         if (in_array($sectionDept, ['BSED_Mathematics', 'BSED_Social_Studies', 'BSED_All'])) {
             $stmt = $conn->prepare("
-                SELECT id, room_number, capacity, type
+                SELECT id, room_number, capacity 
                 FROM classrooms 
                 WHERE type = 'Room' 
                 AND department = 'BSED'
@@ -173,7 +173,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
 
         // First try to get labs from the specific department
         $stmt = $conn->prepare("
-            SELECT id, room_number, capacity, type
+            SELECT id, room_number, capacity 
             FROM classrooms 
             WHERE type = 'Laboratory' 
             AND department = ?
@@ -185,7 +185,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
         // If no labs found and fallback is allowed, try general labs
         if (empty($labs)) {
             $stmt = $conn->prepare("
-                SELECT id, room_number, capacity, type
+                SELECT id, room_number, capacity 
                 FROM classrooms 
                 WHERE type = 'Laboratory' 
                 AND department = 'GENERAL'
@@ -197,7 +197,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
         // If still no labs and fallback is allowed, try regular rooms
         if (empty($labs)) {
             $stmt = $conn->prepare("
-                SELECT id, room_number, capacity, type
+                SELECT id, room_number, capacity 
                 FROM classrooms 
                 WHERE type = 'Room' 
                 AND department = ?
@@ -226,7 +226,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
     $deptList = "'" . implode("','", $allowedDepts) . "'";
 
     $stmt = $conn->prepare("
-        SELECT id, room_number, capacity, type
+        SELECT id, room_number, capacity 
         FROM classrooms 
         WHERE type = ? 
         AND department IN ($deptList)
@@ -241,7 +241,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
     // Special case: BSIT lecture subjects can use BSIT laboratories, but General_Education cannot
     if ($sectionDept === 'BSIT' && $subjectDept === 'BSIT') {
         $stmt = $conn->prepare("
-            SELECT id, room_number, capacity, type 
+            SELECT id, room_number, capacity 
             FROM classrooms 
             WHERE type = 'Laboratory' 
             AND department = 'BSIT'
@@ -261,7 +261,7 @@ function getClassrooms($conn, $subjectType, $sectionDept = null, $allowFallback 
             $additionalDeptList = "'" . implode("','", $additionalDepts) . "'";
 
             $stmt = $conn->prepare("
-                SELECT id, room_number, capacity, type 
+                SELECT id, room_number, capacity 
                 FROM classrooms 
                 WHERE type = ? 
                 AND department IN ($additionalDeptList)
@@ -980,17 +980,12 @@ function scheduleSubjectsMultiPass($conn, $sections, $semester, $academicYear, $
         }
     }
 
-    // PASS 6: Ultra-flexible scheduling - try all possible options including labs for lectures
+    // PASS 6: Ultra-flexible scheduling - ignore section assignments but ensure teachers teach their subjects
     if (!empty($subjectsNotScheduled)) {
         $remainingSubjects = [];
+        $regularRooms = getClassrooms($conn, 'lecture', null, true); // Get all regular rooms (not labs)
 
         foreach ($subjectsNotScheduled as $subjectInfo) {
-            // Skip if not a lecture subject
-            if ($subjectInfo['subject_type'] !== 'lecture') {
-                $remainingSubjects[] = $subjectInfo;
-                continue;
-            }
-
             // Get the full subject data
             $subject = null;
             $originalSection = null;
@@ -1012,88 +1007,32 @@ function scheduleSubjectsMultiPass($conn, $sections, $semester, $academicYear, $
             if ($subject && $originalSection) {
                 $scheduled = false;
 
-                // Determine department-specific lab
-                $labDept = match ($originalSection['department']) {
-                    'BSIT' => 'BSIT',
-                    'BTVTED_Garments', 'BTVTED_Electronics', 'BTVTED_Electrical', 'BTVTED_All' => 'BTVTED',
-                    'Diploma_Agricultural_Sciences', 'BAT_Crops_Production', 'BSA_Agronomy' => 'DAT-BAT',
-                    default => 'GENERAL'
-                };
-
-                // Get all possible rooms in priority order:
-                // 1. Regular rooms from department
-                // 2. Gym rooms
-                // 3. Department labs
-                $regularRooms = getClassrooms($conn, 'lecture', $originalSection['department'], true);
-                $gymRooms = getClassrooms($conn, 'pe', null, false);
-                $departmentLabs = getClassrooms($conn, 'lab', $originalSection['department'], false);
-
-                $allRooms = array_merge($regularRooms, $gymRooms, $departmentLabs);
-
                 // Try each available teacher for this subject
                 foreach ($subject['teacher_ids'] as $teacherId) {
                     // Determine duration and required slots
-                    list($duration, $requiredSlots) = calculateOptimalDuration($subject['minutes_per_week'], 60);
+                    if ($subject['subject_type'] === 'lecture') {
+                        list($duration, $requiredSlots) = calculateOptimalDuration($subject['minutes_per_week'], 60);
+                    } else {
+                        $duration = $subject['minutes_per_week'];
+                        $requiredSlots = 1;
+                    }
 
                     $scheduledSlots = 0;
 
-                    // Try all days in random order
-                    $shuffledDays = $days;
-                    shuffle($shuffledDays);
-
-                    foreach ($shuffledDays as $day) {
+                    // Try all days and time slots
+                    foreach ($days as $day) {
                         if ($scheduledSlots >= $requiredSlots) break;
 
-                        // Generate all possible time slots for this day (with 5-minute increments)
-                        $dayStart = strtotime('07:00 AM');
-                        $dayEnd = strtotime('06:00 PM');
-                        $currentTime = $dayStart;
+                        // Use extended hours
+                        $daySlots = generateFlexibleSlots('07:00 AM', '06:00 PM', $lunchBreak, $duration);
 
-                        while ($currentTime + ($duration * 60) <= $dayEnd) {
-                            $start = date('H:i', $currentTime);
-                            $end = date('H:i', $currentTime + ($duration * 60));
+                        foreach ($daySlots as $slot) {
+                            [$start, $end] = $slot;
 
-                            // Skip lunch break
-                            if (
-                                strtotime($start) < strtotime($lunchBreak[1]) &&
-                                strtotime($end) > strtotime($lunchBreak[0])
-                            ) {
-                                $currentTime = strtotime($lunchBreak[1]);
-                                continue;
-                            }
-
-                            // Try all available rooms in priority order
-                            foreach ($allRooms as $room) {
-                                // For gym rooms, only check teacher conflicts (multiple sections allowed)
-                                if ($room['type'] === 'Gym') {
-                                    $stmt = $conn->prepare("
-                                    SELECT 1 FROM schedules 
-                                    WHERE day = ? AND exam_type = ?
-                                    AND (
-                                        (start_time < ? AND end_time > ?) OR
-                                        (start_time < ? AND end_time > ?) OR
-                                        (start_time >= ? AND end_time <= ?)
-                                    )
-                                    AND teacher_id = ?
-                                    AND semester = ? AND academic_year = ?
-                                ");
-                                    $stmt->bind_param(
-                                        'ssssssssiss',
-                                        $day,
-                                        $examType,
-                                        $end,
-                                        $start,
-                                        $start,
-                                        $end,
-                                        $start,
-                                        $end,
-                                        $teacherId,
-                                        $semester,
-                                        $academicYear
-                                    );
-                                } else {
-                                    // For regular rooms and labs, check teacher and room conflicts
-                                    $stmt = $conn->prepare("
+                            // Try all regular rooms (not labs)
+                            foreach ($regularRooms as $room) {
+                                // Only check for teacher conflicts (ignore section conflicts)
+                                $stmt = $conn->prepare("
                                     SELECT 1 FROM schedules 
                                     WHERE day = ? AND exam_type = ?
                                     AND (
@@ -1107,45 +1046,84 @@ function scheduleSubjectsMultiPass($conn, $sections, $semester, $academicYear, $
                                     )
                                     AND semester = ? AND academic_year = ?
                                 ");
-                                    $stmt->bind_param(
-                                        'sssssssssiis',
-                                        $day,
-                                        $examType,
-                                        $end,
-                                        $start,
-                                        $start,
-                                        $end,
-                                        $start,
-                                        $end,
-                                        $teacherId,
-                                        $room['id'],
-                                        $semester,
-                                        $academicYear
-                                    );
-                                }
+                                $stmt->bind_param(
+                                    'ssssssssiis',
+                                    $day,
+                                    $examType,
+                                    $end,
+                                    $start,
+                                    $start,
+                                    $end,
+                                    $start,
+                                    $end,
+                                    $teacherId,
+                                    $room['id'],
+                                    $semester,
+                                    $academicYear
+                                );
                                 $stmt->execute();
 
                                 if ($stmt->get_result()->num_rows == 0) {
-                                    // No conflicts, assign to original section
-                                    assignSchedule($conn, $subject['id'], $teacherId, $room['id'], $day, $start, $end, $semester, $academicYear, $examType, $subject['subject_type'], $originalSection['id']);
-                                    $scheduledSlots++;
+                                    // No conflicts, assign to any section that needs this subject
+                                    // Find a section that needs this subject and hasn't been scheduled yet
+                                    $targetSection = null;
 
-                                    if ($scheduledSlots >= $requiredSlots) {
-                                        $scheduled = true;
-                                        break 4;
+                                    // First try the original section
+                                    $stmtCheck = $conn->prepare("
+                                        SELECT COUNT(*) as count FROM schedules 
+                                        WHERE subject_id = ? AND section_id = ? 
+                                        AND semester = ? AND academic_year = ? AND exam_type = ?
+                                    ");
+                                    $stmtCheck->bind_param('iisss', $subject['id'], $originalSection['id'], $semester, $academicYear, $examType);
+                                    $stmtCheck->execute();
+                                    $result = $stmtCheck->get_result()->fetch_assoc();
+
+                                    if ($result['count'] == 0) {
+                                        $targetSection = $originalSection;
+                                    } else {
+                                        // Find another section that needs this subject
+                                        foreach ($sections as $sec) {
+                                            if ($sec['id'] == $originalSection['id']) continue;
+
+                                            $stmtCheck = $conn->prepare("
+                                                SELECT COUNT(*) as count FROM schedules 
+                                                WHERE subject_id = ? AND section_id = ? 
+                                                AND semester = ? AND academic_year = ? AND exam_type = ?
+                                            ");
+                                            $stmtCheck->bind_param('iisss', $subject['id'], $sec['id'], $semester, $academicYear, $examType);
+                                            $stmtCheck->execute();
+                                            $result = $stmtCheck->get_result()->fetch_assoc();
+
+                                            if ($result['count'] == 0) {
+                                                // Check if this section has this subject in its curriculum
+                                                $subjectsForSection = getSubjectsForSection($conn, $sec['id'], $sec['semester'], $academicYear);
+                                                foreach ($subjectsForSection as $subj) {
+                                                    if ($subj['id'] == $subject['id']) {
+                                                        $targetSection = $sec;
+                                                        break 2;
+                                                    }
+                                                }
+                                            }
+                                        }
                                     }
-                                    break; // Move to next time slot after successful assignment
+
+                                    if ($targetSection) {
+                                        assignSchedule($conn, $subject['id'], $teacherId, $room['id'], $day, $start, $end, $semester, $academicYear, $examType, $subject['subject_type'], $targetSection['id']);
+                                        $scheduledSlots++;
+
+                                        if ($scheduledSlots >= $requiredSlots) {
+                                            $scheduled = true;
+                                            break 4;
+                                        }
+                                    }
                                 }
                             }
-
-                            // Move to next time slot (5-minute increments for better coverage)
-                            $currentTime += 5 * 60;
                         }
                     }
                 }
 
                 if (!$scheduled) {
-                    $subjectInfo['reason'] = 'Could not schedule even with department lab fallback';
+                    $subjectInfo['reason'] = 'Could not schedule even with flexible section assignment';
                     $remainingSubjects[] = $subjectInfo;
                 }
             } else {
@@ -1155,6 +1133,7 @@ function scheduleSubjectsMultiPass($conn, $sections, $semester, $academicYear, $
 
         $subjectsNotScheduled = $remainingSubjects;
     }
+
     return [
         'sections_scheduled' => count($sectionsScheduled),
         'subjects_without_teachers' => $subjectsWithoutTeachers,

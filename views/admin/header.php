@@ -76,10 +76,13 @@
                         <a href="admin-subjects.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-briefcase"></i></span><span class="pcoded-mtext">Subjects</span></a>
                     </li>
                     <li class="nav-item">
-                        <a href="admin-sections.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layers"></i></span><span class="pcoded-mtext">Departments & Sections</span></a>
+                        <a href="admin-sections.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-layers"></i></span><span class="pcoded-mtext">Programs & Sections</span></a>
                     </li>
                     <li class="nav-item">
                         <a href="admin-classrooms.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-sidebar"></i></span><span class="pcoded-mtext">Classrooms</span></a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="admin-print-room.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-printer"></i></span><span class="pcoded-mtext">Print Classroom Schedule</span></a>
                     </li>
                     <li class="nav-item">
                         <a href="admin-scheduler.php" class="nav-link "><span class="pcoded-micon"><i class="feather icon-calendar"></i></span><span class="pcoded-mtext">Scheduler</span></a>
