@@ -650,7 +650,7 @@ function generateFlexibleSlots($startHour, $endHour, $lunchBreak, $duration)
         ];
 
         // Use smaller gaps for better utilization (5 minutes)
-        $currentTime = $slotEnd + (5 * 60);
+        $currentTime = $slotEnd;
     }
 
     return $slots;
@@ -916,7 +916,12 @@ function scheduleSubjectsMultiPass($conn, $sections, $semester, $academicYear, $
                             if ($scheduledSlots >= $requiredSlots) break;
 
                             // Use extended hours
-                            $daySlots = generateFlexibleSlots('07:00 AM', '06:00 PM', $lunchBreak, $duration);
+                            if ($day === 'Monday') {
+                                $daySlots = generateFlexibleSlots('08:00 AM', '06:00 PM', $lunchBreak, $duration);
+                            } else {
+                                $daySlots = generateFlexibleSlots('07:00 AM', '06:00 PM', $lunchBreak, $duration);
+                            }
+
 
                             foreach ($daySlots as $slot) {
                                 [$start, $end] = $slot;
@@ -1045,7 +1050,12 @@ function scheduleSubjectsMultiPass($conn, $sections, $semester, $academicYear, $
                         if ($scheduledSlots >= $requiredSlots) break;
 
                         // Generate all possible time slots for this day (with 5-minute increments)
-                        $dayStart = strtotime('07:00 AM');
+                        if ($day === 'Monday') {
+                            $dayStart = strtotime('08:00 AM');
+                        } else {
+                            $dayStart = strtotime('07:00 AM');
+                        }
+
                         $dayEnd = strtotime('06:00 PM');
                         $currentTime = $dayStart;
 
@@ -1223,6 +1233,9 @@ function scheduleLabSubject($conn, $subject, $section, $days, $schoolDayStart, $
                 shuffle($dayOrder); // Randomize day order for better distribution
 
                 foreach ($dayOrder as $day) {
+                    if ($day === 'Monday') {
+                        $dayStart = '08:00 AM';
+                    }
                     if ($scheduledBlocks >= count($pattern['blocks'])) break;
 
                     // Generate all possible time slots for this day
@@ -1233,7 +1246,7 @@ function scheduleLabSubject($conn, $subject, $section, $days, $schoolDayStart, $
                             // Try to schedule the 1-hour block right after the 2-hour block
                             if (!empty($scheduledTimes) && $scheduledTimes[0]['day'] === $day) {
                                 $lastEnd = strtotime($scheduledTimes[0]['end']);
-                                $potentialStart = date('H:i', $lastEnd + (5 * 60)); // 5 minutes after previous block
+                                $potentialStart = date('H:i', $lastEnd); // 5 minutes after previous block
                                 $potentialEnd = date('H:i', strtotime($potentialStart) + ($duration * 60));
 
                                 // Check if this would cross lunch
@@ -1367,7 +1380,7 @@ function generateFlexibleLabSlots($startHour, $endHour, $lunchBreak, $duration)
         ];
 
         // Use 5-minute gaps between slots for better utilization
-        $currentTime = $slotEnd + (5 * 60);
+        $currentTime = $slotEnd;
     }
 
     return $slots;
@@ -1515,12 +1528,20 @@ function scheduleSubjectWithFallback($conn, $subject, $section, $days, $schoolDa
 
             // Determine day schedule - extend hours on retry attempts
             $isDepartmentSpecial = in_array($sectionDept, ['BTVTED_All', 'BTVTED_Garments', 'BTVTED_Electronics', 'BTVTED_Electrical']);
-            $dayStart = $isDepartmentSpecial ? $btvtedDayStart : $schoolDayStart;
+            // Update Start Time Handling for Mondays
+            if ($day === 'Monday') {
+                $dayStart = '08:00 AM';
+            } else {
+                $dayStart = $isDepartmentSpecial ? $btvtedDayStart : $schoolDayStart;
+            }
             $dayEnd = $isDepartmentSpecial ? $btvtedDayEnd : $schoolDayEnd;
 
             if ($attempt > 0) {
-                $dayStart = '07:00 AM';
-                $dayEnd = '06:00 PM';
+                $dayEnd = '06:00 PM'; // Extend end time on retries
+                // Ensure non-Mondays start at 7:00 AM during retries
+                if ($day !== 'Monday') {
+                    $dayStart = '07:00 AM';
+                }
             }
 
             $daySlots = generateFlexibleSlots($dayStart, $dayEnd, $lunchBreak, $duration);
@@ -1598,8 +1619,8 @@ if (isset($_POST['submit'])) {
         $schoolDayEnd = '06:00 PM';
         $btvtedDayStart = '07:00 AM';
         $btvtedDayEnd = '06:00 PM';
-        // Updated lunch break timing: 12:20 PM - 1:20 PM
-        $lunchBreak = ['12:20 PM', '01:20 PM'];
+        // Updated lunch break timing: 12:00 PM - 1:00 PM
+        $lunchBreak = ['12:00 PM', '01:00 PM'];
         $days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 
         // Sort sections by priority (higher years first, then by department complexity)
@@ -1647,11 +1668,11 @@ if (isset($_POST['submit'])) {
         $examDays = ['Wednesday', 'Thursday', 'Friday'];
         $examSlots = [
             ['07:00:00', '08:30:00'],
-            ['08:40:00', '10:10:00'],
-            ['10:20:00', '11:50:00'],
+            ['08:30:00', '10:00:00'],
+            ['10:00:00', '11:30:00'],
             ['13:00:00', '14:30:00'],
-            ['14:40:00', '16:10:00'],
-            ['16:20:00', '17:50:00']
+            ['14:30:00', '16:00:00'],
+            ['16:00:00', '17:30:00']
         ];
 
         $subjectsWithoutTeachers = [];

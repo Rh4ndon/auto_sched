@@ -1,4 +1,16 @@
 <?php
+// Add this BEFORE session_start() in login.php and session.php
+session_set_cookie_params([
+    'lifetime' => 0,
+    'path' => '/',
+    'domain' => '',
+    'secure' => isset($_SERVER['HTTPS']),
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+session_start();
+
+
 // Enable error reporting
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
@@ -21,7 +33,7 @@ if (isset($_POST['email']) && isset($_POST['password'])) {
 
     header('Content-Type: application/json');
     if ($record) {
-        session_start(); // Make sure to start the session
+
         $_SESSION['id'] = $record['id'];
         $_SESSION['email'] = $email;
         $_SESSION['name'] = $record['name'];

@@ -52,6 +52,50 @@
 
  <!-- prism Js -->
  <script src="../../assets/js/plugins/prism.js"></script>
+ <script>
+     // Clear navigation flags when page loads
+     sessionStorage.removeItem('isNavigating');
+
+     // Detect if page is being refreshed
+     let isPageRefresh = false;
+     window.addEventListener('beforeunload', function(e) {
+         if (!e.persisted && performance.navigation.type === 1) {
+             isPageRefresh = true;
+             sessionStorage.setItem('isReload', 'true');
+         }
+     });
+
+     // Handle all navigation
+     document.querySelectorAll('a').forEach(link => {
+         link.addEventListener('click', () => {
+             sessionStorage.setItem('isNavigating', 'true');
+         });
+     });
+
+     // Handle form submissions
+     document.querySelectorAll('form').forEach(form => {
+         form.addEventListener('submit', () => {
+             sessionStorage.setItem('isNavigating', 'true');
+         });
+     });
+
+     // Handle actual unload
+     window.addEventListener('beforeunload', function(e) {
+         const isNavigating = sessionStorage.getItem('isNavigating');
+         const isReload = sessionStorage.getItem('isReload');
+
+         if (!isNavigating && !isReload) {
+             // Only logout if closing tab/window
+             navigator.sendBeacon('../../controllers/logout.php');
+         }
+
+         // Cleanup flags
+         sessionStorage.removeItem('isNavigating');
+         sessionStorage.removeItem('isReload');
+     });
+ </script>
+
+
  </body>
 
  </html>

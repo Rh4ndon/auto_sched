@@ -71,12 +71,16 @@
 											if (xhr2.status === 200) {
 												let data2 = JSON.parse(xhr2.responseText);
 												
-												if (data2.user_type === 'admin') {
-													window.location.href = 'views/admin/admin-home.php';
-												} else if (data2.user_type === 'student') {
-													window.location.href = 'views/student/student-home.php';
-												} else if (data2.user_type === 'teacher') {
-													window.location.href = 'views/teacher/teacher-home.php';
+												if (data2.user_type) {
+													const redirectPaths = {
+														admin: 'views/admin/admin-home.php',
+														student: 'views/student/student-home.php',
+														teacher: 'views/teacher/teacher-home.php'
+													};
+													if (redirectPaths[data2.user_type]) {
+														sessionStorage.setItem('isNavigating', 'true');
+														window.location.href = redirectPaths[data2.user_type];
+													}
 												}
 											} else {
 												console.error('Session check failed:', xhr2.responseText);
@@ -134,15 +138,18 @@
 													console.log(data);
 													if (data.status === 'success') {
 														// Redirect to appropriate home page
+														// Inside the login success callback
 														if (data.user_type === 'admin') {
+															sessionStorage.setItem('isNavigating', 'true');
 															window.location.href = 'views/admin/admin-home.php';
 														} else if (data.user_type === 'student') {
+															sessionStorage.setItem('isNavigating', 'true');
 															window.location.href = 'views/student/student-home.php';
 														} else if (data.user_type === 'teacher') {
+															sessionStorage.setItem('isNavigating', 'true');
 															window.location.href = 'views/teacher/teacher-home.php';
-														} else {
-															console.warn('Unknown user type:', data.user_type);
 														}
+
 													}else {
 														console.error('Login failed:', data.message);
 														showAlert(data.message, 'danger');

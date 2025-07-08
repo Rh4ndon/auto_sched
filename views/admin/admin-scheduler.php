@@ -633,7 +633,7 @@
                 data.forEach(row => {
                     const tr = document.createElement('tr');
                     tr.innerHTML = `
-                    <td contenteditable="true" class="${row.time === '12:00 PM - 01:00 PM' ? 'lunch-break' : ''}">${row.time}</td>
+                    <td contenteditable="true" class="${row.time === '12:20 PM - 01:20 PM' ? 'lunch-break' : ''}">${row.time}</td>
                     <td contenteditable="true" class="${row.monday === 'Lunch Break' ? 'lunch-break' : ''}">${row.monday}</td>
                     <td contenteditable="true" class="${row.tuesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.tuesday}</td>
                     <td contenteditable="true" class="${row.wednesday === 'Lunch Break' ? 'lunch-break' : ''}">${row.wednesday}</td>
@@ -977,7 +977,7 @@
                 const rowStartY = currentY;
 
                 // Determine if this is a lunch break row
-                const isLunchBreak = row.time.includes('12:00 PM - 01:00 PM') ||
+                const isLunchBreak = row.time.includes('12:20 PM - 01:20 PM') ||
                     row.monday === 'Lunch Break' ||
                     row.tuesday === 'Lunch Break' ||
                     row.wednesday === 'Lunch Break' ||
